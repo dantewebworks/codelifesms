@@ -3,8 +3,8 @@
     { "src": "/webhook/sms", "dest": "/api/webhook.js" },
     { "src": "/webhook/voice", "dest": "/api/voice.js" },
     { "src": "/api/(.*)", "dest": "/api/$1" },
-    { "src": "/", "dest": "public/sms-dashboard-fixed.html" },
-    { "src": "/(.*)", "dest": "public/$1" }
+    { "src": "/", "dest": "/sms-dashboard-fixed.html" },
+    { "src": "/(.*)", "dest": "/$1" }
   ],
   "functions": {
     "api/webhook.js": { "maxDuration": 10 },
