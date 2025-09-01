@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telnyx API Key Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .status {
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        #result {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .key-format {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔑 Telnyx API Key Test</h1>
+        
+        <div class="key-format">
+            <h3>📋 Telnyx API Key Format:</h3>
+            <p><strong>Your API key should look like:</strong></p>
+            <ul>
+                <li><code>KEY0183...</code> (starts with KEY)</li>
+                <li><code>KEY0183...</code> (about 32 characters long)</li>
+                <li><strong>Do NOT include "Bearer"</strong> - just the key itself</li>
+            </ul>
+            <p><strong>Example:</strong> <code>KEY0183ABC123DEF456GHI789JKL012MNO345</code></p>
+        </div>
+        
+        <h3>Enter Your Telnyx API Key:</h3>
+        <input type="text" id="apiKey" placeholder="Enter your Telnyx API key (e.g., KEY0183...)" />
+        
+        <div>
+            <button onclick="testDirectAPI()">Test Direct API</button>
+            <button onclick="testViaProxy()">Test Via Proxy</button>
+            <button onclick="clearResults()">Clear Results</button>
+        </div>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function log(message) {
+            const result = document.getElementById('result');
+            result.textContent += new Date().toLocaleTimeString() + ': ' + message + '\n';
+            result.scrollTop = result.scrollHeight;
+        }
+
+        function clearResults() {
+            document.getElementById('result').textContent = '';
+        }
+
+        function testDirectAPI() {
+            const apiKey = document.getElementById('apiKey').value.trim();
+            
+            if (!apiKey) {
+                log('❌ Please enter your API key first');
+                return;
+            }
+
+            if (!apiKey.startsWith('KEY')) {
+                log('⚠️  Warning: API key should start with "KEY"');
+            }
+
+            log('🔍 Testing direct Telnyx API connection...');
+            
+            // Test different authentication methods directly
+            const authMethods = [
+                { name: 'Bearer Token', headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' } },
+                { name: 'X-API-Key', headers: { 'X-API-Key': apiKey, 'Content-Type': 'application/json' } },
+                { name: 'API Key Only', headers: { 'Authorization': apiKey, 'Content-Type': 'application/json' } }
+            ];
+
+            const endpoints = [
+                'https://api.telnyx.com/v2/phone_numbers',
+                'https://api.telnyx.com/v2/phone-numbers',
+                'https://api.telnyx.com/v1/phone_numbers'
+            ];
+
+            let testsCompleted = 0;
+            const totalTests = authMethods.length * endpoints.length;
+
+            authMethods.forEach(authMethod => {
+                endpoints.forEach(endpoint => {
+                    fetch(endpoint, {
+                        method: 'GET',
+                        headers: authMethod.headers
+                    })
+                    .then(response => {
+                        testsCompleted++;
+                        log(`📡 ${authMethod.name} + ${endpoint}: ${response.status}`);
+                        
+                        if (response.ok) {
+                            return response.json();
+                        } else {
+                            return response.text().then(text => {
+                                throw new Error(`HTTP ${response.status}: ${text}`);
+                            });
+                        }
+                    })
+                    .then(data => {
+                        log(`✅ SUCCESS with ${authMethod.name} + ${endpoint}!`);
+                        log(`📊 Data: ${JSON.stringify(data, null, 2)}`);
+                    })
+                    .catch(error => {
+                        log(`❌ Failed with ${authMethod.name} + ${endpoint}: ${error.message}`);
+                        
+                        if (testsCompleted === totalTests) {
+                            log('\n💡 All tests completed. Check the results above.');
+                        }
+                    });
+                });
+            });
+        }
+
+        function testViaProxy() {
+            const apiKey = document.getElementById('apiKey').value.trim();
+            
+            if (!apiKey) {
+                log('❌ Please enter your API key first');
+                return;
+            }
+
+            log('🔍 Testing via local proxy server...');
+            
+            fetch('http://localhost:3001/api/telynx/phone-numbers', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                log(`📡 Proxy response status: ${response.status}`);
+                
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    return response.json().then(errorData => {
+                        throw new Error(`Proxy Error ${response.status}: ${errorData.error || 'Unknown error'}`);
+                    });
+                }
+            })
+            .then(data => {
+                log('✅ SUCCESS via proxy!');
+                log(`📊 Data: ${JSON.stringify(data, null, 2)}`);
+            })
+            .catch(error => {
+                log(`❌ Proxy test failed: ${error.message}`);
+                
+                if (error.message.includes('Failed to fetch')) {
+                    log('💡 Make sure the proxy server is running: node proxy-server.js');
+                }
+            });
+        }
+    </script>
+</body>
+</html> 

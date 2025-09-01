@@ -1,0 +1,20 @@
+{
+  "name": "sms-webhook-server",
+  "version": "1.0.0",
+  "description": "Simple SMS webhook server for Telnyx",
+  "main": "sms-webhook-server.js",
+  "scripts": {
+    "start": "node sms-webhook-server.js",
+    "dev": "node sms-webhook-server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5"
+  },
+  "engines": {
+    "node": ">=14.x"
+  },
+  "keywords": ["sms", "webhook", "telnyx", "express"],
+  "author": "SMS Dashboard",
+  "license": "MIT"
+}

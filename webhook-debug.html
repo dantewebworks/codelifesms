@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Webhook Debug Tool</title>
+</head>
+<body>
+    <h1>Webhook URL Debug Tool</h1>
+    
+    <div>
+        <h3>Test Webhook URL Storage:</h3>
+        <input type="text" id="testWebhook" placeholder="Enter webhook URL" style="width: 400px; padding: 10px;">
+        <button onclick="saveTest()">Save Test</button>
+        <button onclick="loadTest()">Load Test</button>
+        <button onclick="clearTest()">Clear All</button>
+    </div>
+    
+    <div id="results" style="margin-top: 20px; padding: 20px; background: #f0f0f0;"></div>
+    
+    <script>
+        function log(message) {
+            const results = document.getElementById('results');
+            results.innerHTML += '<div>' + new Date().toLocaleTimeString() + ': ' + message + '</div>';
+        }
+        
+        function saveTest() {
+            const url = document.getElementById('testWebhook').value;
+            if (!url) {
+                log('❌ No URL entered');
+                return;
+            }
+            
+            try {
+                localStorage.setItem('telynxWebhookUrl', url);
+                localStorage.setItem('webhookUrl', url);
+                localStorage.setItem('webhook', url);
+                localStorage.setItem('apiSettings', JSON.stringify({webhook: url}));
+                log('✅ Saved: ' + url);
+                log('✅ Saved to 4 different keys');
+            } catch (e) {
+                log('❌ Save failed: ' + e.message);
+            }
+        }
+        
+        function loadTest() {
+            const url1 = localStorage.getItem('telynxWebhookUrl');
+            const url2 = localStorage.getItem('webhookUrl');
+            const url3 = localStorage.getItem('webhook');
+            const settings = localStorage.getItem('apiSettings');
+            
+            log('📋 telynxWebhookUrl: ' + (url1 || 'NOT FOUND'));
+            log('📋 webhookUrl: ' + (url2 || 'NOT FOUND'));
+            log('📋 webhook: ' + (url3 || 'NOT FOUND'));
+            log('📋 apiSettings: ' + (settings || 'NOT FOUND'));
+            
+            if (url1) {
+                document.getElementById('testWebhook').value = url1;
+                log('✅ Loaded URL into field: ' + url1);
+            } else {
+                log('❌ No URL found in localStorage');
+            }
+        }
+        
+        function clearTest() {
+            localStorage.removeItem('telynxWebhookUrl');
+            localStorage.removeItem('webhookUrl');
+            localStorage.removeItem('webhook');
+            localStorage.removeItem('apiSettings');
+            document.getElementById('testWebhook').value = '';
+            log('🗑️ All cleared');
+        }
+        
+        // Auto-load on page load
+        window.onload = function() {
+            log('🚀 Debug tool loaded');
+            loadTest();
+        };
+    </script>
+</body>
+</html>

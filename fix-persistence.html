@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fix API Persistence</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; padding: 15px; border-radius: 5px; margin: 10px 0; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; padding: 15px; border-radius: 5px; margin: 10px 0; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; padding: 15px; border-radius: 5px; margin: 10px 0; }
+        #result {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Fix API Settings Persistence</h1>
+        
+        <div class="info">
+            <h3>Step 1: Test localStorage</h3>
+            <p>Let's verify localStorage is working properly.</p>
+        </div>
+        
+        <h3>Enter Test API Key:</h3>
+        <input type="text" id="testApiKey" placeholder="Enter a test API key" value="KEY0183ABC123DEF456GHI789JKL012MNO345" />
+        
+        <div>
+            <button onclick="testLocalStorage()">Test localStorage</button>
+            <button onclick="clearStorage()">Clear Storage</button>
+            <button onclick="checkStorage()">Check Storage</button>
+        </div>
+        
+        <div class="info">
+            <h3>Step 2: Copy Fixed Code</h3>
+            <p>Copy this bulletproof code to replace your current save/load functions:</p>
+        </div>
+        
+        <div id="fixedCode" style="background: #f8f9fa; padding: 15px; border-radius: 5px; font-family: monospace; font-size: 12px; max-height: 300px; overflow-y: auto;">
+// BULLETPROOF API SETTINGS PERSISTENCE
+
+// Save API settings with multiple fallbacks
+function saveAPISettings() {
+    const apiKey = document.getElementById('apiSettingsKey').value.trim();
+    const webhook = document.getElementById('apiSettingsWebhook').value.trim();
+    
+    console.log('🔍 Saving API settings...');
+    console.log('API Key length:', apiKey ? apiKey.length : 'No key');
+    
+    if (!apiKey) {
+        alert('❌ Please enter an API key');
+        return;
+    }
+    
+    try {
+        // Method 1: JSON object
+        const settings = {
+            apiKey: apiKey,
+            webhook: webhook,
+            savedAt: new Date().toISOString()
+        };
+        localStorage.setItem('apiSettings', JSON.stringify(settings));
+        console.log('✅ Saved to apiSettings (JSON)');
+        
+        // Method 2: Individual values
+        localStorage.setItem('telynxAPIKey', apiKey);
+        localStorage.setItem('telynxWebhookUrl', webhook);
+        localStorage.setItem('apiSettingsSaved', 'true');
+        console.log('✅ Saved individual values');
+        
+        // Method 3: Simple key
+        localStorage.setItem('apiKey', apiKey);
+        console.log('✅ Saved to apiKey');
+        
+        // Update global variable
+        window.telynxAPIKey = apiKey;
+        console.log('✅ Updated global variable');
+        
+        // Visual feedback
+        const saveButton = document.querySelector('button[onclick="saveAPISettings()"]');
+        if (saveButton) {
+            const originalText = saveButton.innerHTML;
+            saveButton.innerHTML = '<i class="fas fa-check"></i> Saved!';
+            saveButton.style.background = '#28a745';
+            setTimeout(() => {
+                saveButton.innerHTML = originalText;
+                saveButton.style.background = '#6c757d';
+            }, 2000);
+        }
+        
+        console.log('✅ All save methods completed successfully');
+        
+        // Test the connection
+        setTimeout(() => {
+            testAPIConnection();
+        }, 500);
+        
+    } catch (error) {
+        console.error('❌ Save failed:', error);
+        alert('❌ Failed to save settings: ' + error.message);
+    }
+}
+
+// Load API settings with multiple fallbacks
+function loadAPISettings() {
+    console.log('🔍 Loading API settings...');
+    
+    let apiKey = null;
+    let webhook = null;
+    
+    try {
+        // Method 1: Try JSON object first
+        const jsonSettings = localStorage.getItem('apiSettings');
+        if (jsonSettings) {
+            const settings = JSON.parse(jsonSettings);
+            apiKey = settings.apiKey;
+            webhook = settings.webhook;
+            console.log('✅ Loaded from JSON object');
+        }
+        
+        // Method 2: Fallback to individual values
+        if (!apiKey) {
+            apiKey = localStorage.getItem('telynxAPIKey');
+            console.log('✅ Loaded from individual key');
+        }
+        
+        if (!webhook) {
+            webhook = localStorage.getItem('telynxWebhookUrl');
+            console.log('✅ Loaded from individual webhook');
+        }
+        
+        // Method 3: Fallback to simple key
+        if (!apiKey) {
+            apiKey = localStorage.getItem('apiKey');
+            console.log('✅ Loaded from simple key');
+        }
+        
+        // Update form fields
+        const apiKeyField = document.getElementById('apiSettingsKey');
+        const webhookField = document.getElementById('apiSettingsWebhook');
+        
+        if (apiKeyField && apiKey) {
+            apiKeyField.value = apiKey;
+            console.log('✅ Updated API key field');
+        }
+        
+        if (webhookField && webhook) {
+            webhookField.value = webhook;
+            console.log('✅ Updated webhook field');
+        }
+        
+        // Update global variable
+        if (apiKey) {
+            window.telynxAPIKey = apiKey;
+            console.log('✅ Updated global variable');
+        }
+        
+        console.log('✅ Settings loaded successfully');
+        
+    } catch (error) {
+        console.error('❌ Load failed:', error);
+    }
+}
+
+// Initialize settings on page load
+function initializeAPISettings() {
+    console.log('🚀 Initializing API settings...');
+    
+    // Load settings multiple times to ensure they're applied
+    loadAPISettings();
+    
+    setTimeout(() => {
+        console.log('🔄 Retrying load...');
+        loadAPISettings();
+    }, 100);
+    
+    setTimeout(() => {
+        console.log('🔄 Final load attempt...');
+        loadAPISettings();
+    }, 500);
+}
+
+// Call initialization when page loads
+document.addEventListener('DOMContentLoaded', initializeAPISettings);
+window.addEventListener('load', initializeAPISettings);
+        </div>
+        
+        <button onclick="copyCode()" style="background: #28a745;">Copy Fixed Code</button>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const result = document.getElementById('result');
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
+            result.innerHTML += `<div class="${className}">${new Date().toLocaleTimeString()}: ${message}</div>`;
+            result.scrollTop = result.scrollHeight;
+        }
+
+        function testLocalStorage() {
+            const apiKey = document.getElementById('testApiKey').value.trim();
+            
+            if (!apiKey) {
+                log('❌ Please enter an API key', 'error');
+                return;
+            }
+            
+            log('🔍 Testing localStorage functionality...');
+            
+            try {
+                // Test all save methods
+                const settings = {
+                    apiKey: apiKey,
+                    webhook: 'https://example.com/webhook',
+                    savedAt: new Date().toISOString()
+                };
+                
+                localStorage.setItem('apiSettings', JSON.stringify(settings));
+                localStorage.setItem('telynxAPIKey', apiKey);
+                localStorage.setItem('telynxWebhookUrl', 'https://example.com/webhook');
+                localStorage.setItem('apiSettingsSaved', 'true');
+                localStorage.setItem('apiKey', apiKey);
+                
+                log('✅ All save methods completed successfully', 'success');
+                
+                // Test loading
+                const loadedSettings = localStorage.getItem('apiSettings');
+                const loadedKey = localStorage.getItem('telynxAPIKey');
+                const loadedSimple = localStorage.getItem('apiKey');
+                
+                if (loadedSettings && loadedKey && loadedSimple) {
+                    log('✅ All load methods working correctly', 'success');
+                } else {
+                    log('❌ Some load methods failed', 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ Test failed: ${error.message}`, 'error');
+            }
+        }
+
+        function clearStorage() {
+            log('🧹 Clearing all localStorage...');
+            
+            try {
+                localStorage.removeItem('apiSettings');
+                localStorage.removeItem('telynxAPIKey');
+                localStorage.removeItem('telynxWebhookUrl');
+                localStorage.removeItem('apiSettingsSaved');
+                localStorage.removeItem('apiKey');
+                
+                log('✅ All localStorage items cleared', 'success');
+            } catch (error) {
+                log(`❌ Clear failed: ${error.message}`, 'error');
+            }
+        }
+
+        function checkStorage() {
+            log('🔍 Checking localStorage...');
+            
+            try {
+                const allKeys = Object.keys(localStorage);
+                log(`📊 Total localStorage items: ${allKeys.length}`);
+                
+                allKeys.forEach(key => {
+                    const value = localStorage.getItem(key);
+                    if (key.includes('api') || key.includes('telnyx')) {
+                        const displayValue = value && value.length > 20 ? value.substring(0, 20) + '...' : value;
+                        log(`📋 ${key}: ${displayValue}`);
+                    }
+                });
+                
+            } catch (error) {
+                log(`❌ Check failed: ${error.message}`, 'error');
+            }
+        }
+
+        function copyCode() {
+            const codeElement = document.getElementById('fixedCode');
+            const text = codeElement.textContent;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                log('✅ Code copied to clipboard!', 'success');
+                log('Now replace your saveAPISettings() and loadAPISettings() functions with this code.', 'info');
+            }).catch(() => {
+                log('❌ Failed to copy code. Please select and copy manually.', 'error');
+            });
+        }
+
+        // Auto-run on page load
+        window.onload = function() {
+            log('🚀 Page loaded, testing localStorage...');
+            checkStorage();
+        };
+    </script>
+</body>
+</html> 

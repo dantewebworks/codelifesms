@@ -1,0 +1,32 @@
+{
+  "name": "codelife-sms",
+  "description": "CodeLife SMS Management Platform",
+  "repository": "https://github.com/dantewebworks/codelifesms",
+  "logo": "https://node-js-sample.herokuapp.com/node.png",
+  "keywords": ["sms", "telnyx", "messaging", "webhooks"],
+  "env": {
+    "TELNYX_API_KEY": {
+      "description": "Your Telnyx API Key",
+      "required": true
+    },
+    "TELNYX_CONNECTION_ID": {
+      "description": "Your Telnyx Connection ID",
+      "required": true
+    },
+    "PORT": {
+      "description": "Port for the web server",
+      "value": "3000"
+    }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "free"
+    }
+  },
+  "buildpacks": [
+    {
+      "url": "heroku/nodejs"
+    }
+  ]
+}

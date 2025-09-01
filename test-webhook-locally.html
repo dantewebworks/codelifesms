@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Local Webhook</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        input, button { padding: 10px; margin: 5px; }
+        .result { padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Your Local Webhook</h1>
+    
+    <div>
+        <label>Your ngrok URL:</label><br>
+        <input type="url" id="ngrokUrl" placeholder="https://abc123.ngrok.io" style="width: 400px;">
+        <br><br>
+        
+        <button onclick="testHealth()">Test Health Check</button>
+        <button onclick="testWebhookEndpoint()">Test Webhook Endpoint</button>
+        <button onclick="sendTestMessage()">Send Test SMS Event</button>
+    </div>
+    
+    <div id="results"></div>
+    
+    <script>
+        function addResult(title, content, type) {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = 'result ' + type;
+            div.innerHTML = `<h3>${title}</h3><div>${content}</div>`;
+            results.appendChild(div);
+        }
+        
+        async function testHealth() {
+            const url = document.getElementById('ngrokUrl').value.trim();
+            if (!url) {
+                addResult('❌ Error', 'Please enter your ngrok URL', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(url);
+                if (response.ok) {
+                    const data = await response.json();
+                    addResult('✅ Health Check Success', 
+                        `Status: ${data.status}<br>
+                         Stored Messages: ${data.stored_messages}<br>
+                         Endpoints: ${JSON.stringify(data.endpoints)}`, 'success');
+                } else {
+                    addResult('❌ Health Check Failed', `Status: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                addResult('❌ Health Check Error', error.message, 'error');
+            }
+        }
+        
+        async function testWebhookEndpoint() {
+            const url = document.getElementById('ngrokUrl').value.trim();
+            if (!url) return;
+            
+            const webhookUrl = url + '/webhook';
+            
+            try {
+                const response = await fetch(webhookUrl);
+                if (response.ok) {
+                    const data = await response.json();
+                    addResult('✅ Webhook Endpoint Working', 
+                        `Response: ${JSON.stringify(data)}`, 'success');
+                } else {
+                    addResult('❌ Webhook Endpoint Failed', `Status: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                addResult('❌ Webhook Endpoint Error', error.message, 'error');
+            }
+        }
+        
+        async function sendTestMessage() {
+            const url = document.getElementById('ngrokUrl').value.trim();
+            if (!url) return;
+            
+            const webhookUrl = url + '/webhook';
+            
+            // Simulate a Telnyx SMS webhook event
+            const testEvent = {
+                data: {
+                    event_type: 'message.received',
+                    payload: {
+                        id: 'test-message-' + Date.now(),
+                        from: {
+                            phone_number: '+1234567890'
+                        },
+                        to: [{
+                            phone_number: '+1987654321'
+                        }],
+                        text: 'Test message from webhook tester',
+                        received_at: new Date().toISOString()
+                    }
+                }
+            };
+            
+            try {
+                const response = await fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(testEvent)
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    addResult('✅ Test Message Sent', 
+                        `Response: ${JSON.stringify(data)}<br>
+                         <strong>Check your local server console for the message!</strong>`, 'success');
+                    
+                    // Also check if message was stored
+                    setTimeout(async () => {
+                        const messagesResponse = await fetch(url + '/messages');
+                        if (messagesResponse.ok) {
+                            const messagesData = await messagesResponse.json();
+                            addResult('📨 Messages Check', 
+                                `Total messages: ${messagesData.count}<br>
+                                 Latest: ${messagesData.messages[0]?.text || 'None'}`, 'success');
+                        }
+                    }, 1000);
+                    
+                } else {
+                    addResult('❌ Test Message Failed', `Status: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                addResult('❌ Test Message Error', error.message, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

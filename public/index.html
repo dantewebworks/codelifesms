@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeLife SMS Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .status.online {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.offline {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: white;
+            border-radius: 15px;
+            padding: 5px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .nav-tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .nav-tab.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .nav-tab:hover:not(.active) {
+            background: #f8f9fa;
+        }
+
+        .content-section {
+            display: none;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .file-upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f8f9ff;
+        }
+
+        .file-upload-area:hover {
+            border-color: #5a6fd8;
+            background: #f0f2ff;
+        }
+
+        .file-upload-area.dragover {
+            border-color: #28a745;
+            background: #f8fff8;
+        }
+
+        .file-upload-icon {
+            font-size: 48px;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .file-upload-text {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .file-upload-hint {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .csv-preview {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .csv-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .csv-table th,
+        .csv-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .csv-table th {
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+        }
+
+        .csv-table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 0.3s ease;
+        }
+
+        .message-list {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        .message-item {
+            padding: 10px;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .message-item:last-child {
+            border-bottom: none;
+        }
+
+        .message-content {
+            flex: 1;
+        }
+
+        .message-phone {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .message-text {
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .message-time {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .template-variables {
+            background: #f8f9ff;
+            border: 1px solid #e1e5e9;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+
+        .variable-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .variable-item {
+            background: #667eea;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .bulk-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .nav-tabs {
+                flex-direction: column;
+            }
+            
+            .bulk-actions {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1><i class="fas fa-comments"></i> CodeLife SMS Dashboard</h1>
+            <div class="status online" id="connectionStatus">
+                <i class="fas fa-circle"></i> Online
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="nav-tabs">
+            <div class="nav-tab active" onclick="showSection('dashboard')">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+            </div>
+            <div class="nav-tab" onclick="showSection('bulk-sms')">
+                <i class="fas fa-users"></i> Bulk SMS
+            </div>
+            <div class="nav-tab" onclick="showSection('api-settings')">
+                <i class="fas fa-cog"></i> API Settings
+            </div>
+            <div class="nav-tab" onclick="showSection('messages')">
+                <i class="fas fa-inbox"></i> Messages
+            </div>
+        </div>
+
+        <!-- Dashboard Section -->
+        <div id="dashboard" class="content-section active">
+            <div class="grid">
+                <div class="card">
+                    <h3 class="card-title"><i class="fas fa-paper-plane"></i> Send SMS</h3>
+                    <div class="form-group">
+                        <label class="form-label">To Phone Number</label>
+                        <input type="tel" class="form-input" id="toNumber" placeholder="+1234567890">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">From Phone Number</label>
+                        <select class="form-input" id="fromNumber">
+                            <option value="">Select phone number...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Message</label>
+                        <textarea class="form-input form-textarea" id="messageText" placeholder="Enter your message here..."></textarea>
+                        <div style="text-align: right; margin-top: 5px; font-size: 12px; color: #666;">
+                            <span id="charCount">0</span> characters
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="sendSMS()">
+                        <i class="fas fa-paper-plane"></i> Send SMS
+                    </button>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title"><i class="fas fa-chart-bar"></i> Quick Stats</h3>
+                    <div style="text-align: center; padding: 20px;">
+                        <div style="font-size: 36px; font-weight: bold; color: #667eea; margin-bottom: 10px;" id="totalMessages">0</div>
+                        <div style="color: #666;">Total Messages</div>
+                    </div>
+                    <div style="text-align: center; padding: 20px;">
+                        <div style="font-size: 36px; font-weight: bold; color: #28a745; margin-bottom: 10px;" id="successRate">0%</div>
+                        <div style="color: #666;">Success Rate</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bulk SMS Section -->
+        <div id="bulk-sms" class="content-section">
+            <div class="card">
+                <h3 class="card-title"><i class="fas fa-upload"></i> Upload CSV File</h3>
+                <div class="file-upload-area" id="fileUploadArea">
+                    <div class="file-upload-icon">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <div class="file-upload-text">Click to upload or drag & drop CSV file</div>
+                    <div class="file-upload-hint">CSV should have columns: phone, message (or use template)</div>
+                </div>
+                <input type="file" id="csvFile" accept=".csv" style="display: none;">
+
+                <div class="template-variables">
+                    <h4>📝 Template Variables</h4>
+                    <div class="variable-list" id="templateVariables">
+                        <div class="variable-item">{{name}}</div>
+                        <div class="variable-item">{{phone}}</div>
+                        <div class="variable-item">{{email}}</div>
+                        <div class="variable-item">{{company}}</div>
+                        <div class="variable-item">{{custom}}</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Message Template (Optional)</label>
+                    <textarea class="form-input form-textarea" id="messageTemplate" placeholder="Hi {{name}}, this is your message. Your phone: {{phone}}"></textarea>
+                    <div style="font-size: 0.8rem; color: #6b7280; margin-top: 0.5rem;">
+                        Leave empty to use 'message' column from CSV, or use template with variables
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">From Phone Number</label>
+                    <select class="form-input" id="bulkFromNumber">
+                        <option value="">Select phone number...</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Delay Between Messages (ms)</label>
+                    <input type="number" class="form-input" id="messageDelay" value="1000" min="0" max="10000">
+                </div>
+
+                <div id="csvPreview" class="csv-preview" style="display: none;">
+                    <h4>📊 CSV Preview</h4>
+                    <div id="csvTableContainer"></div>
+                </div>
+
+                <div class="bulk-actions">
+                    <button class="btn btn-primary" id="sendBulkBtn" onclick="sendBulkSMS()" disabled>
+                        <i class="fas fa-paper-plane"></i> Send Bulk SMS
+                    </button>
+                    <button class="btn btn-secondary" onclick="clearBulkData()">
+                        <i class="fas fa-trash"></i> Clear Data
+                    </button>
+                    <button class="btn btn-secondary" onclick="downloadSampleCSV()">
+                        <i class="fas fa-download"></i> Download Sample CSV
+                    </button>
+                </div>
+
+                <div id="bulkProgress" style="display: none; margin-top: 20px;">
+                    <h4>📈 Progress</h4>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                    </div>
+                    <div id="progressText" style="text-align: center; margin-top: 10px;">0/0</div>
+                </div>
+
+                <div id="bulkResults" style="display: none; margin-top: 20px;">
+                    <h4>📋 Results</h4>
+                    <div id="bulkResultsList"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- API Settings Section -->
+        <div id="api-settings" class="content-section">
+            <div class="card">
+                <h3 class="card-title"><i class="fas fa-key"></i> Telnyx API Configuration</h3>
+                <div class="form-group">
+                    <label class="form-label">API Key</label>
+                    <input type="password" class="form-input" id="apiKey" placeholder="Enter your Telnyx API key">
+                </div>
+                <button class="btn btn-primary" onclick="testAPIConnection()">
+                    <i class="fas fa-plug"></i> Test Connection
+                </button>
+                <button class="btn btn-secondary" onclick="saveAPISettings()">
+                    <i class="fas fa-save"></i> Save Settings
+                </button>
+                
+                <div id="apiStatus" style="margin-top: 20px;"></div>
+                
+                <div id="phoneNumbersList" style="margin-top: 20px; display: none;">
+                    <h4>📱 Your Phone Numbers</h4>
+                    <div id="phoneNumbersContainer"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Messages Section -->
+        <div id="messages" class="content-section">
+            <div class="card">
+                <h3 class="card-title"><i class="fas fa-inbox"></i> Incoming Messages</h3>
+                <button class="btn btn-primary" onclick="loadMessages()">
+                    <i class="fas fa-sync"></i> Refresh Messages
+                </button>
+                <button class="btn btn-secondary" onclick="clearMessages()">
+                    <i class="fas fa-trash"></i> Clear Messages
+                </button>
+                <button class="btn btn-info" onclick="showWebhookInstructions()">
+                    <i class="fas fa-link"></i> Webhook Setup
+                </button>
+                
+                <div id="messagesContainer" class="message-list" style="margin-top: 20px;">
+                    <div style="text-align: center; color: #666; padding: 20px;">
+                        No messages yet. Click "Refresh Messages" to load incoming messages.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentSection = 'dashboard';
+        let bulkCSVData = [];
+        let phoneNumbers = [];
+
+        // API base URL
+        const API_BASE = 'http://localhost:3000/api';
+
+        // Simple webhook instructions function
+        window.showWebhookInstructions = function() {
+            const webhookUrl = 'https://11f8d6912ac9.ngrok-free.app/webhook/sms';
+            
+            // Copy to clipboard
+            navigator.clipboard.writeText(webhookUrl).then(() => {
+                showAlert('✅ Webhook URL copied to clipboard!', 'success');
+            }).catch(() => {
+                showAlert('❌ Failed to copy to clipboard', 'error');
+            });
+            
+            const instructions = `
+🔗 **WEBHOOK SETUP - FIX INCOMING MESSAGES**
+
+**Step 1:** Copy this URL (already copied to clipboard):
+${webhookUrl}
+
+**Step 2:** Go to Telnyx Dashboard:
+- Open: https://portal.telnyx.com
+- Go to "Messaging" → "Phone Numbers"
+- Click on your number: +18137420762
+
+**Step 3:** Update Webhook URL:
+- Find "Webhook URL" field
+- Replace with the URL above
+- Save changes
+
+**Step 4:** Test:
+- Send "a" to +18137420762
+- Click "Refresh Messages"
+- You should see "a" appear
+
+✅ **This will fix your incoming messages!**
+            `;
+            
+            alert(instructions);
+        };
+
+        // Webhook setup function
+        window.setupWebhook = function() {
+            const webhookUrl = 'https://b7926f883d32.ngrok-free.app/webhook/sms';
+            console.log('🔗 Webhook URL:', webhookUrl);
+            
+            // Copy to clipboard
+            navigator.clipboard.writeText(webhookUrl).then(() => {
+                showAlert('✅ Webhook URL copied to clipboard!', 'success');
+                console.log('📋 Webhook URL copied to clipboard');
+            }).catch(() => {
+                showAlert('❌ Failed to copy to clipboard', 'error');
+            });
+            
+            // Show instructions
+            const instructions = `
+🔗 **WEBHOOK SETUP INSTRUCTIONS:**
+
+1. **Copy this URL:** ${webhookUrl}
+
+2. **Go to Telnyx Dashboard:**
+   - Login to https://portal.telnyx.com
+   - Go to "Messaging" → "Phone Numbers"
+   - Click on your phone number (+18137420762)
+
+3. **Update Webhook URL:**
+   - Find "Webhook URL" field
+   - Replace with: ${webhookUrl}
+   - Save changes
+
+4. **Test:**
+   - Send a message to your number
+   - Click "Refresh Messages" in the app
+
+✅ **This will enable real incoming messages!**
+            `;
+            
+            console.log(instructions);
+            alert(instructions);
+        };
+
+        // Clear all messages function
+        window.clearAllMessages = function() {
+            console.log('🧹 Clearing all messages...');
+            
+            fetch('http://localhost:3000/api/clear-data', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ type: 'messages' })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('🧹 Clear response:', data);
+                showAlert('✅ All messages cleared!', 'success');
+                loadMessages(); // Refresh to show empty state
+            })
+            .catch(error => {
+                console.log('❌ Clear error:', error);
+                showAlert('❌ Failed to clear messages', 'error');
+            });
+        };
+
+        // Test webhook function
+        window.testWebhook = function() {
+            console.log('🧪 Testing webhook...');
+            
+            // Test with multiple webhook formats to see which one works
+            const testFormats = [
+                // Format 1: Standard Telnyx webhook
+                {
+                    data: {
+                        payload: {
+                            from: { phone_number: '+18133038643' },
+                            to: { phone_number: '+18137420762' },
+                            text: 'Test message from webhook format 1!'
+                        }
+                    }
+                },
+                // Format 2: Direct message format
+                {
+                    data: {
+                        record_type: 'message',
+                        from: { phone_number: '+18133038643' },
+                        to: [{ phone_number: '+18137420762' }],
+                        text: 'Test message from webhook format 2!'
+                    }
+                },
+                // Format 3: Simple format
+                {
+                    data: {
+                        from: '+18133038643',
+                        to: '+18137420762',
+                        text: 'Test message from webhook format 3!'
+                    }
+                }
+            ];
+            
+            // Send each format with a delay
+            testFormats.forEach((testData, index) => {
+                setTimeout(() => {
+                    console.log(`🧪 Sending webhook format ${index + 1}:`, testData);
+                    
+                    fetch('https://b7926f883d32.ngrok-free.app/webhook/sms', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(testData)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log(`📨 Webhook format ${index + 1} response:`, data);
+                        
+                        if (index === testFormats.length - 1) {
+                            showAlert('✅ All webhook tests sent! Check messages.', 'success');
+                            
+                            // Auto-refresh messages after 2 seconds
+                            setTimeout(() => {
+                                loadMessages();
+                            }, 2000);
+                        }
+                    })
+                    .catch(error => {
+                        console.log(`❌ Webhook format ${index + 1} error:`, error);
+                    });
+                }, index * 1000); // Send each format 1 second apart
+            });
+        };
+
+        // ==================== UTILITY FUNCTIONS ====================
+
+        function showSection(sectionName) {
+            // Hide all sections
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected section
+            document.getElementById(sectionName).classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+            
+            currentSection = sectionName;
+        }
+
+        function showAlert(message, type = 'info') {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.innerHTML = message;
+            
+            // Remove existing alerts
+            document.querySelectorAll('.alert').forEach(alert => alert.remove());
+            
+            // Add new alert
+            document.querySelector('.container').insertBefore(alertDiv, document.querySelector('.nav-tabs'));
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 5000);
+        }
+
+        // ==================== API FUNCTIONS ====================
+
+        async function testAPIConnection() {
+            const apiKey = document.getElementById('apiKey').value.trim();
+            
+            if (!apiKey) {
+                showAlert('Please enter your API key', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/test-connection`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ apiKey })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showAlert('✅ API connection successful!', 'success');
+                    phoneNumbers = result.phoneNumbers;
+                    updatePhoneNumberDropdowns();
+                    document.getElementById('phoneNumbersList').style.display = 'block';
+                    updatePhoneNumbersDisplay();
+                } else {
+                    showAlert(`❌ API connection failed: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                showAlert(`❌ Connection error: ${error.message}`, 'error');
+            }
+        }
+
+        async function sendSMS() {
+            console.log('📱 Send SMS function called');
+            
+            const to = document.getElementById('toNumber').value.trim();
+            const from = document.getElementById('fromNumber').value;
+            const message = document.getElementById('messageText').value.trim();
+
+            console.log('📱 SMS Details:', { to, from, message: message.substring(0, 50) + '...' });
+
+            if (!to || !from || !message) {
+                console.log('❌ Missing fields:', { to: !!to, from: !!from, message: !!message });
+                showAlert('Please fill in all fields', 'error');
+                return;
+            }
+
+            try {
+                console.log('📡 Sending API request to:', `${API_BASE}/send-sms`);
+                
+                const response = await fetch(`${API_BASE}/send-sms`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ to, from, message })
+                });
+
+                console.log('📡 API Response status:', response.status);
+                
+                const result = await response.json();
+                console.log('📡 API Response:', result);
+
+                if (result.success) {
+                    console.log('✅ SMS sent successfully!');
+                    showAlert('✅ SMS sent successfully!', 'success');
+                    document.getElementById('toNumber').value = '';
+                    document.getElementById('messageText').value = '';
+                    updateCharCount();
+                } else {
+                    console.log('❌ SMS failed:', result.error);
+                    showAlert(`❌ Failed to send SMS: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                console.log('❌ Network error:', error);
+                showAlert(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function uploadCSV() {
+            const fileInput = document.getElementById('csvFile');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                showAlert('Please select a CSV file', 'error');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('csvFile', file);
+
+            try {
+                const response = await fetch(`${API_BASE}/upload-csv`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    bulkCSVData = result.data;
+                    showAlert(`✅ CSV uploaded successfully: ${result.data.length} contacts`, 'success');
+                    showCSVPreview(result.preview, result.detectedColumns, result.availableVariables);
+                    document.getElementById('sendBulkBtn').disabled = false;
+                } else {
+                    showAlert(`❌ CSV upload failed: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                showAlert(`❌ Upload error: ${error.message}`, 'error');
+            }
+        }
+
+        async function sendBulkSMS() {
+            const fromNumber = document.getElementById('bulkFromNumber').value;
+            const template = document.getElementById('messageTemplate').value.trim();
+            const delay = parseInt(document.getElementById('messageDelay').value) || 1000;
+
+            if (!fromNumber) {
+                showAlert('Please select a "From" phone number', 'error');
+                return;
+            }
+
+            if (bulkCSVData.length === 0) {
+                showAlert('No CSV data loaded', 'error');
+                return;
+            }
+
+            if (!confirm(`Send ${bulkCSVData.length} SMS messages?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/send-bulk-sms`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ fromNumber, template, delay })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showAlert(`✅ Bulk SMS completed: ${result.summary.success} success, ${result.summary.errors} errors`, 'success');
+                    showBulkResults(result.results, result.summary);
+                } else {
+                    showAlert(`❌ Bulk SMS failed: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                showAlert(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function loadMessages() {
+            console.log('📨 Loading messages...');
+            try {
+                const response = await fetch(`${API_BASE}/messages`);
+                console.log('📨 API Response status:', response.status);
+                
+                const result = await response.json();
+                console.log('📨 API Response:', result);
+
+                if (result.success) {
+                    console.log('📨 Messages loaded:', result.messages.length);
+                    displayMessages(result.messages);
+                } else {
+                    console.log('❌ Failed to load messages');
+                    showAlert('Failed to load messages', 'error');
+                }
+            } catch (error) {
+                console.log('❌ Error loading messages:', error);
+                showAlert(`Error loading messages: ${error.message}`, 'error');
+            }
+        }
+
+        async function clearMessages() {
+            try {
+                const response = await fetch(`${API_BASE}/clear-data`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ type: 'messages' })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showAlert('Messages cleared', 'success');
+                    displayMessages([]);
+                }
+            } catch (error) {
+                showAlert(`Error clearing messages: ${error.message}`, 'error');
+            }
+        }
+
+        // ==================== UI FUNCTIONS ====================
+
+        function updatePhoneNumberDropdowns() {
+            const fromSelect = document.getElementById('fromNumber');
+            const bulkFromSelect = document.getElementById('bulkFromNumber');
+            
+            // Clear existing options
+            fromSelect.innerHTML = '<option value="">Select phone number...</option>';
+            bulkFromSelect.innerHTML = '<option value="">Select phone number...</option>';
+            
+            // Add phone numbers
+            phoneNumbers.forEach(phone => {
+                const option = document.createElement('option');
+                option.value = phone.phone_number;
+                option.textContent = `${phone.phone_number} (${phone.status})`;
+                
+                fromSelect.appendChild(option.cloneNode(true));
+                bulkFromSelect.appendChild(option);
+            });
+        }
+
+        function updatePhoneNumbersDisplay() {
+            const container = document.getElementById('phoneNumbersContainer');
+            container.innerHTML = '';
+
+            phoneNumbers.forEach(phone => {
+                const div = document.createElement('div');
+                div.style.cssText = 'padding: 10px; border: 1px solid #dee2e6; border-radius: 5px; margin: 5px 0; background: #f8f9fa;';
+                div.innerHTML = `
+                    <strong>${phone.phone_number}</strong><br>
+                    <small>Status: ${phone.status}</small>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function showCSVPreview(data, detectedColumns, availableVariables) {
+            const container = document.getElementById('csvTableContainer');
+            const preview = document.getElementById('csvPreview');
+            
+            if (data.length === 0) {
+                container.innerHTML = '<p>No data to preview</p>';
+                preview.style.display = 'block';
+                return;
+            }
+
+            const headers = Object.keys(data[0]);
+            let html = '<table class="csv-table"><thead><tr>';
+            
+            headers.forEach(header => {
+                const isDetected = Object.values(detectedColumns || {}).includes(header);
+                const style = isDetected ? 'background: #d4edda; color: #155724;' : '';
+                html += `<th style="${style}">${header}</th>`;
+            });
+            
+            html += '</tr></thead><tbody>';
+            
+            data.forEach(row => {
+                html += '<tr>';
+                headers.forEach(header => {
+                    html += `<td>${row[header] || ''}</td>`;
+                });
+                html += '</tr>';
+            });
+            
+            html += '</tbody></table>';
+            
+            container.innerHTML = html;
+            preview.style.display = 'block';
+
+            // Update template variables
+            if (availableVariables) {
+                const variablesContainer = document.getElementById('templateVariables');
+                variablesContainer.innerHTML = '';
+                availableVariables.forEach(variable => {
+                    const div = document.createElement('div');
+                    div.className = 'variable-item';
+                    div.textContent = variable;
+                    variablesContainer.appendChild(div);
+                });
+            }
+        }
+
+        function showBulkResults(results, summary) {
+            const container = document.getElementById('bulkResultsList');
+            const resultsDiv = document.getElementById('bulkResults');
+            
+            let html = `
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                    <h5>Summary</h5>
+                    <p>Total: ${summary.total} | Success: ${summary.success} | Errors: ${summary.errors}</p>
+                </div>
+            `;
+            
+            results.forEach(result => {
+                const statusColor = result.status === 'success' ? '#28a745' : '#dc3545';
+                html += `
+                    <div style="padding: 10px; border: 1px solid #dee2e6; border-radius: 5px; margin: 5px 0; background: white;">
+                        <div style="color: ${statusColor}; font-weight: 600;">${result.phone}</div>
+                        <div style="color: #666; font-size: 14px;">${result.message}</div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+            resultsDiv.style.display = 'block';
+        }
+
+        function displayMessages(messages) {
+            console.log('📨 Displaying messages:', messages);
+            const container = document.getElementById('messagesContainer');
+            console.log('📨 Container found:', !!container);
+            
+            if (messages.length === 0) {
+                console.log('📨 No messages to display');
+                container.innerHTML = '<div style="text-align: center; color: #666; padding: 20px;">No messages found.</div>';
+                return;
+            }
+
+            let html = '';
+            messages.forEach(message => {
+                const time = new Date(message.timestamp).toLocaleString();
+                html += `
+                    <div class="message-item">
+                        <div class="message-content">
+                            <div class="message-phone">${message.from}</div>
+                            <div class="message-text">${message.text}</div>
+                            <div class="message-time">${time}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            console.log('📨 Generated HTML:', html.substring(0, 200) + '...');
+            container.innerHTML = html;
+            console.log('📨 Messages displayed successfully');
+        }
+
+        function updateCharCount() {
+            const textarea = document.getElementById('messageText');
+            const count = textarea.value.length;
+            document.getElementById('charCount').textContent = count;
+        }
+
+        function clearBulkData() {
+            bulkCSVData = [];
+            document.getElementById('csvFile').value = '';
+            document.getElementById('messageTemplate').value = '';
+            document.getElementById('sendBulkBtn').disabled = true;
+            document.getElementById('csvPreview').style.display = 'none';
+            document.getElementById('bulkResults').style.display = 'none';
+            showAlert('Bulk data cleared', 'success');
+        }
+
+        function downloadSampleCSV() {
+            const sampleData = `phone,name,email,company,message
++1234567890,John Doe,john@example.com,ABC Corp,Hi {{name}}, this is a test message from {{company}}
++1987654321,Jane Smith,jane@example.com,XYZ Inc,Hello {{name}}, your phone is {{phone}}
++1555123456,Bob Johnson,bob@example.com,Test LLC,Welcome {{name}}! Contact us at {{email}}`;
+            
+            const blob = new Blob([sampleData], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'sample_bulk_sms.csv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            showAlert('Sample CSV downloaded', 'success');
+        }
+
+        function saveAPISettings() {
+            const apiKey = document.getElementById('apiKey').value.trim();
+            if (apiKey) {
+                localStorage.setItem('telnyxAPIKey', apiKey);
+                showAlert('API settings saved', 'success');
+            } else {
+                showAlert('Please enter an API key', 'error');
+            }
+        }
+
+        // ==================== EVENT LISTENERS ====================
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load saved API key
+            const savedApiKey = localStorage.getItem('telnyxAPIKey');
+            if (savedApiKey) {
+                document.getElementById('apiKey').value = savedApiKey;
+            }
+
+            // Set up file upload
+            const fileUploadArea = document.getElementById('fileUploadArea');
+            const fileInput = document.getElementById('csvFile');
+
+            fileUploadArea.onclick = () => fileInput.click();
+            fileInput.onchange = uploadCSV;
+
+            // Set up drag and drop
+            fileUploadArea.ondragover = (e) => {
+                e.preventDefault();
+                fileUploadArea.classList.add('dragover');
+            };
+
+            fileUploadArea.ondragleave = (e) => {
+                e.preventDefault();
+                fileUploadArea.classList.remove('dragover');
+            };
+
+            fileUploadArea.ondrop = (e) => {
+                e.preventDefault();
+                fileUploadArea.classList.remove('dragover');
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    fileInput.files = files;
+                    uploadCSV();
+                }
+            };
+
+            // Set up character counter
+            document.getElementById('messageText').addEventListener('input', updateCharCount);
+
+            // Load messages on page load
+            loadMessages();
+
+            console.log('🚀 CodeLife SMS Dashboard loaded successfully!');
+        });
+    </script>
+</body>
+</html> 

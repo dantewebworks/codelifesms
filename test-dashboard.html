@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Dashboard - Mobile Messages</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .mobile-container {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 10px 0;
+        }
+        .mobile-phone {
+            max-width: 400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .mobile-header {
+            background: #667eea;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        .mobile-messages {
+            padding: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .message {
+            background: #d4edda;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid #28a745;
+        }
+        .message.replied {
+            background: #e2d9f3;
+            border-left-color: #6f42c1;
+        }
+        .message.pending {
+            background: #fff3cd;
+            border-left-color: #ffc107;
+        }
+        .message-header {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-left: 10px;
+            color: white;
+        }
+        .status-new { background: #28a745; }
+        .status-replied { background: #6f42c1; }
+        .status-pending { background: #ffc107; color: #333; }
+        .message-from {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        .message-text {
+            color: #333;
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+        .message-time {
+            color: #999;
+            font-size: 12px;
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h2>📱 Test Mobile Message Display</h2>
+            <p>This is a test to verify the mobile message display works correctly.</p>
+            
+            <div class="mobile-container">
+                <div class="mobile-phone">
+                    <div class="mobile-header">
+                        📱 Incoming Messages
+                    </div>
+                    <div id="mobileMessagesList" class="mobile-messages">
+                        <div style="text-align: center; color: #666; padding: 20px;">Loading messages...</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="margin-top: 20px;">
+                <button class="btn" onclick="loadMessages()">🔄 Load Messages</button>
+                <button class="btn" onclick="addTestMessage()">➕ Add Test Message</button>
+                <button class="btn" onclick="clearMessages()">🗑️ Clear Messages</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Your latest messages from the webhook
+        const realMessages = [
+            {
+                id: 1754360530708,
+                timestamp: '2025-08-05T02:22:10.708Z',
+                from: '+18133038643',
+                to: '+18137420762',
+                text: 'Bkv',
+                status: 'received'
+            },
+            {
+                id: 1754360522974,
+                timestamp: '2025-08-05T02:22:02.974Z',
+                from: '+18133038643',
+                to: '+18137420762',
+                text: 'Pree',
+                status: 'received'
+            },
+            {
+                id: 1754359395308,
+                timestamp: '2025-08-05T02:03:15.308Z',
+                from: '+18133038643',
+                to: '+18137420762',
+                text: 'Yo',
+                status: 'received'
+            },
+            {
+                id: 1754359144541,
+                timestamp: '2025-08-05T01:59:04.541Z',
+                from: '+18133038643',
+                to: '+18137420762',
+                text: 'Blv',
+                status: 'received'
+            },
+            {
+                id: 1754359126472,
+                timestamp: '2025-08-05T01:58:46.472Z',
+                from: '+18133038643',
+                to: '+18137420762',
+                text: 'How are you doing',
+                status: 'received'
+            },
+            {
+                id: 1754359108242,
+                timestamp: '2025-08-05T01:58:28.242Z',
+                from: '+18133038643',
+                to: '+18137420762',
+                text: 'Yow',
+                status: 'received'
+            },
+            {
+                id: 1754358773502,
+                timestamp: '2025-08-05T01:52:53.502Z',
+                from: '+18137420762',
+                to: 'Unknown',
+                text: 'hello',
+                status: 'received'
+            },
+            {
+                id: 1754358773090,
+                timestamp: '2025-08-05T01:52:53.090Z',
+                from: '+18137420762',
+                to: 'Unknown',
+                text: 'hello',
+                status: 'received'
+            },
+            {
+                id: 1754357353518,
+                timestamp: '2025-08-05T01:29:13.518Z',
+                from: '+18133038643',
+                to: '+18137420762',
+                text: 'Test message from dashboard',
+                status: 'received'
+            }
+        ];
+
+        let mobileMessages = [];
+
+        function loadMessages() {
+            console.log('🔄 Loading messages...');
+            mobileMessages = [...realMessages];
+            displayMessages();
+            console.log('✅ Loaded', mobileMessages.length, 'messages');
+        }
+
+        function addTestMessage() {
+            const testMessage = {
+                id: Date.now(),
+                timestamp: new Date().toISOString(),
+                from: '+18133038643',
+                to: '+18137420762',
+                text: 'Test message ' + new Date().toLocaleTimeString(),
+                status: 'received'
+            };
+            
+            mobileMessages.unshift(testMessage);
+            displayMessages();
+            console.log('✅ Added test message');
+        }
+
+        function clearMessages() {
+            mobileMessages = [];
+            displayMessages();
+            console.log('✅ Cleared messages');
+        }
+
+        function displayMessages() {
+            const messagesDiv = document.getElementById('mobileMessagesList');
+            
+            if (!mobileMessages || mobileMessages.length === 0) {
+                messagesDiv.innerHTML = `
+                    <div style="text-align: center; color: #666; padding: 40px 20px;">
+                        <div style="font-size: 48px; margin-bottom: 20px;">📱</div>
+                        <div>No messages yet</div>
+                        <div style="font-size: 14px; margin-top: 10px;">Click "Load Messages" to see your messages!</div>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            
+            mobileMessages.forEach((msg, index) => {
+                const time = new Date(msg.timestamp).toLocaleString();
+                
+                // Determine status based on recency
+                let statusClass = 'new';
+                let statusText = 'New';
+                
+                if (index >= 3) {
+                    statusClass = 'replied';
+                    statusText = 'Replied';
+                }
+                
+                if (index >= 5) {
+                    statusClass = 'pending';
+                    statusText = 'Pending';
+                }
+
+                html += `
+                    <div class="message ${statusClass}">
+                        <div class="message-header">
+                            ${msg.from === '+18133038643' ? 'You' : 'Unknown Sender'}
+                            <span class="status-badge status-${statusClass}">${statusText}</span>
+                        </div>
+                        <div class="message-from">${msg.from}</div>
+                        <div class="message-text">${msg.text}</div>
+                        <div class="message-time">${time}</div>
+                    </div>
+                `;
+            });
+
+            messagesDiv.innerHTML = html;
+        }
+
+        // Load messages immediately when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Page loaded, loading messages...');
+            loadMessages();
+        });
+
+        console.log('✅ Test dashboard loaded successfully');
+    </script>
+</body>
+</html> 

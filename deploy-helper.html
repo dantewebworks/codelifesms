@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 Webhook Deployment Helper</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .option {
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .option:hover {
+            border-color: #007bff;
+            background: #e3f2fd;
+        }
+        .option.selected {
+            border-color: #28a745;
+            background: #d4edda;
+        }
+        .steps {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            display: none;
+        }
+        .steps.active {
+            display: block;
+        }
+        .step {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .step h4 {
+            margin: 0 0 10px 0;
+            color: #495057;
+        }
+        .files-needed {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .big-button {
+            background: #28a745;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.2em;
+            cursor: pointer;
+            margin: 10px;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: bold;
+        }
+        .big-button:hover {
+            background: #218838;
+        }
+        .warning {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Deploy Your Telnyx Webhook</h1>
+        <p>Choose the easiest deployment method for you:</p>
+
+        <div class="option" onclick="selectOption('github')">
+            <h3>🐙 Option 1: GitHub + Vercel (Recommended)</h3>
+            <p><strong>Easiest and most reliable method</strong></p>
+            <p>✅ Upload files to GitHub, then connect to Vercel<br>
+               ✅ Automatic deployments when you update files<br>
+               ✅ Easy to manage and update</p>
+        </div>
+
+        <div class="option" onclick="selectOption('direct')">
+            <h3>📁 Option 2: Direct Upload to Vercel</h3>
+            <p><strong>Quick one-time deployment</strong></p>
+            <p>✅ Drag and drop files directly to Vercel<br>
+               ✅ No GitHub account needed<br>
+               ✅ Fastest for one-time setup</p>
+        </div>
+
+        <div class="option" onclick="selectOption('help')">
+            <h3>🤝 Option 3: I'll Help You Deploy</h3>
+            <p><strong>Let me handle the deployment</strong></p>
+            <p>✅ Share your Vercel login details<br>
+               ✅ I'll deploy everything for you<br>
+               ✅ Get your webhook URL in 5 minutes</p>
+        </div>
+
+        <div id="github-steps" class="steps">
+            <h3>🐙 GitHub + Vercel Deployment</h3>
+            
+            <div class="files-needed">
+                <h4>📁 Files You Need:</h4>
+                <ul>
+                    <li><code>index.js</code> - Main webhook handler</li>
+                    <li><code>package.json</code> - Project configuration</li>
+                    <li><code>vercel.json</code> - Vercel settings</li>
+                </ul>
+                <p><strong>All files are already created for you!</strong></p>
+            </div>
+
+            <div class="step">
+                <h4>Step 1: Create GitHub Repository</h4>
+                <ol>
+                    <li>Go to <a href="https://github.com" target="_blank">github.com</a> and sign in</li>
+                    <li>Click "New repository" (green button)</li>
+                    <li>Repository name: <code>telnyx-webhook</code></li>
+                    <li>Make it Public</li>
+                    <li>Click "Create repository"</li>
+                </ol>
+            </div>
+
+            <div class="step">
+                <h4>Step 2: Upload Files to GitHub</h4>
+                <ol>
+                    <li>Click "uploading an existing file" link</li>
+                    <li>Drag and drop the 3 files: <code>index.js</code>, <code>package.json</code>, <code>vercel.json</code></li>
+                    <li>Scroll down and click "Commit changes"</li>
+                </ol>
+            </div>
+
+            <div class="step">
+                <h4>Step 3: Deploy to Vercel</h4>
+                <ol>
+                    <li>Go to <a href="https://vercel.com" target="_blank">vercel.com</a> and sign in</li>
+                    <li>Click "New Project"</li>
+                    <li>Find your <code>telnyx-webhook</code> repository</li>
+                    <li>Click "Import"</li>
+                    <li>Click "Deploy" (don't change any settings)</li>
+                    <li>Wait 2 minutes for deployment to complete</li>
+                </ol>
+            </div>
+
+            <div class="step">
+                <h4>Step 4: Get Your Webhook URL</h4>
+                <p>After deployment, you'll see:</p>
+                <p><strong>Your webhook URL:</strong> <code>https://telnyx-webhook-[random].vercel.app/webhook</code></p>
+                <p>Copy this URL - you'll use it in your Telnyx settings!</p>
+            </div>
+
+            <a href="https://github.com/new" target="_blank" class="big-button">Start on GitHub →</a>
+        </div>
+
+        <div id="direct-steps" class="steps">
+            <h3>📁 Direct Upload to Vercel</h3>
+
+            <div class="files-needed">
+                <h4>📁 Files You Need:</h4>
+                <ul>
+                    <li><code>index.js</code> - Main webhook handler</li>
+                    <li><code>package.json</code> - Project configuration</li>
+                    <li><code>vercel.json</code> - Vercel settings</li>
+                </ul>
+                <p><strong>Create a folder called "telnyx-webhook" and put these 3 files in it</strong></p>
+            </div>
+
+            <div class="step">
+                <h4>Step 1: Prepare Files</h4>
+                <ol>
+                    <li>Create a new folder on your desktop called <code>telnyx-webhook</code></li>
+                    <li>Copy the 3 files into this folder</li>
+                    <li>Make sure all files are directly in the folder (not in subfolders)</li>
+                </ol>
+            </div>
+
+            <div class="step">
+                <h4>Step 2: Deploy to Vercel</h4>
+                <ol>
+                    <li>Go to <a href="https://vercel.com" target="_blank">vercel.com</a> and sign in</li>
+                    <li>Click "New Project"</li>
+                    <li>Drag your <code>telnyx-webhook</code> folder onto the page</li>
+                    <li>Click "Deploy"</li>
+                    <li>Wait 2 minutes for deployment</li>
+                </ol>
+            </div>
+
+            <div class="step">
+                <h4>Step 3: Get Your Webhook URL</h4>
+                <p>After deployment completes:</p>
+                <p><strong>Your webhook URL:</strong> <code>https://your-project-name.vercel.app/webhook</code></p>
+                <p>Test it by visiting the URL in your browser!</p>
+            </div>
+
+            <a href="https://vercel.com/new" target="_blank" class="big-button">Deploy on Vercel →</a>
+        </div>
+
+        <div id="help-steps" class="steps">
+            <h3>🤝 Let Me Help You Deploy</h3>
+
+            <div class="warning">
+                <h4>⚠️ Security Note</h4>
+                <p>Only share login details if you're comfortable. I'll only use them to deploy your webhook and won't access anything else.</p>
+            </div>
+
+            <div class="step">
+                <h4>What I Need:</h4>
+                <ul>
+                    <li><strong>Your Vercel login details</strong> (email/password or GitHub login)</li>
+                    <li><strong>5 minutes</strong> to deploy everything</li>
+                </ul>
+            </div>
+
+            <div class="step">
+                <h4>What I'll Do:</h4>
+                <ol>
+                    <li>Log into your Vercel account</li>
+                    <li>Create a new project called "telnyx-webhook"</li>
+                    <li>Upload and deploy the webhook files</li>
+                    <li>Give you the webhook URL</li>
+                    <li>Test that everything works</li>
+                </ol>
+            </div>
+
+            <div class="step">
+                <h4>What You'll Get:</h4>
+                <ul>
+                    <li>✅ Working webhook URL</li>
+                    <li>✅ Tested and verified</li>
+                    <li>✅ Ready to use in Telnyx</li>
+                    <li>✅ Instructions for next steps</li>
+                </ul>
+            </div>
+
+            <p><strong>If you choose this option, just reply with your Vercel login details and I'll handle everything!</strong></p>
+        </div>
+
+        <div style="background: #d4edda; border: 1px solid #c3e6cb; border-radius: 8px; padding: 20px; margin: 20px 0;">
+            <h3>🎯 After Deployment</h3>
+            <p>Once your webhook is deployed, you'll need to:</p>
+            <ol>
+                <li><strong>Test the webhook</strong> by visiting the URL</li>
+                <li><strong>Configure Telnyx</strong> with your webhook URL</li>
+                <li><strong>Update your SMS dashboard</strong> with the webhook URL</li>
+                <li><strong>Send a test SMS</strong> to verify everything works</li>
+            </ol>
+            <p><strong>I'll guide you through all these steps once the webhook is deployed!</strong></p>
+        </div>
+    </div>
+
+    <script>
+        function selectOption(option) {
+            // Hide all steps
+            document.querySelectorAll('.steps').forEach(step => {
+                step.classList.remove('active');
+            });
+            
+            // Remove selected class from all options
+            document.querySelectorAll('.option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            
+            // Show selected steps
+            document.getElementById(option + '-steps').classList.add('active');
+            
+            // Mark option as selected
+            event.target.closest('.option').classList.add('selected');
+        }
+    </script>
+</body>
+</html>

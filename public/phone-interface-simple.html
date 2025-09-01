@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeLife Phone Interface</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .phone-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .call-status {
+            font-size: 18px;
+            margin-bottom: 30px;
+            font-weight: 500;
+        }
+
+        .caller-info {
+            margin-bottom: 30px;
+        }
+
+        .caller-name {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .caller-number {
+            font-size: 16px;
+            opacity: 0.8;
+        }
+
+        .call-timer {
+            font-size: 14px;
+            margin-bottom: 30px;
+            opacity: 0.7;
+        }
+
+        .call-controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .control-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            font-size: 20px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mute-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .mute-btn.active {
+            background: #ff4757;
+        }
+
+        .hangup-btn {
+            background: #ff4757;
+            color: white;
+            transform: rotate(135deg);
+        }
+
+        .hangup-btn:hover {
+            background: #ff3742;
+            transform: rotate(135deg) scale(1.1);
+        }
+
+        .volume-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .volume-btn.active {
+            background: #2ed573;
+        }
+
+        .keypad-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .keypad {
+            display: none;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .keypad.show {
+            display: grid;
+        }
+
+        .keypad-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .keypad-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        .status-connecting {
+            background: #ffa502;
+            animation: pulse 1.5s infinite;
+        }
+
+        .status-connected {
+            background: #2ed573;
+        }
+
+        .status-ended {
+            background: #ff4757;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .error-message {
+            background: rgba(255, 71, 87, 0.2);
+            border: 1px solid #ff4757;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        .success-message {
+            background: rgba(46, 213, 115, 0.2);
+            border: 1px solid #2ed573;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        .warning-message {
+            background: rgba(255, 193, 7, 0.2);
+            border: 1px solid #ffc107;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        .audio-test {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .test-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 12px;
+        }
+
+        .test-btn:hover {
+            background: #2563eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-container">
+        <div class="call-status">
+            <span class="status-indicator" id="statusIndicator"></span>
+            <span id="statusText">Initializing...</span>
+        </div>
+
+        <div class="caller-info">
+            <div class="caller-name" id="callerName">Unknown</div>
+            <div class="caller-number" id="callerNumber">+1 (XXX) XXX-XXXX</div>
+        </div>
+
+        <div class="call-timer" id="callTimer">00:00</div>
+
+        <div class="call-controls">
+            <button class="control-btn mute-btn" id="muteBtn" onclick="toggleMute()">
+                <i class="fas fa-microphone"></i>
+            </button>
+            <button class="control-btn hangup-btn" id="hangupBtn" onclick="hangup()">
+                <i class="fas fa-phone"></i>
+            </button>
+            <button class="control-btn volume-btn" id="volumeBtn" onclick="toggleVolume()">
+                <i class="fas fa-volume-up"></i>
+            </button>
+        </div>
+
+        <button class="control-btn keypad-btn" id="keypadToggle" onclick="toggleKeypad()">
+            <i class="fas fa-th"></i>
+        </button>
+
+        <div class="keypad" id="keypad">
+            <button class="keypad-btn" onclick="sendDTMF('1')">1</button>
+            <button class="keypad-btn" onclick="sendDTMF('2')">2</button>
+            <button class="keypad-btn" onclick="sendDTMF('3')">3</button>
+            <button class="keypad-btn" onclick="sendDTMF('4')">4</button>
+            <button class="keypad-btn" onclick="sendDTMF('5')">5</button>
+            <button class="keypad-btn" onclick="sendDTMF('6')">6</button>
+            <button class="keypad-btn" onclick="sendDTMF('7')">7</button>
+            <button class="keypad-btn" onclick="sendDTMF('8')">8</button>
+            <button class="keypad-btn" onclick="sendDTMF('9')">9</button>
+            <button class="keypad-btn" onclick="sendDTMF('*')">*</button>
+            <button class="keypad-btn" onclick="sendDTMF('0')">0</button>
+            <button class="keypad-btn" onclick="sendDTMF('#')">#</button>
+        </div>
+
+        <div class="audio-test">
+            <div style="margin-bottom: 10px; font-size: 14px;">Audio Test:</div>
+            <button class="test-btn" onclick="testMicrophone()">Test Microphone</button>
+            <button class="test-btn" onclick="testSpeaker()">Test Speaker</button>
+            <button class="test-btn" onclick="startAudioLoop()">Start Audio Loop</button>
+        </div>
+
+        <div id="messageContainer"></div>
+    </div>
+
+    <!-- Hidden audio elements -->
+    <audio id="testAudio" style="display: none;"></audio>
+    <audio id="loopbackAudio" style="display: none;"></audio>
+
+    <script>
+        let callStartTime = null;
+        let callTimer = null;
+        let isMuted = false;
+        let isVolumeOff = false;
+        let callControlId = null;
+        let callSessionId = null;
+        let localStream = null;
+        let audioContext = null;
+        let audioLoopback = null;
+
+        // Get URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const toNumber = urlParams.get('to');
+        const fromNumber = urlParams.get('from');
+        const callerName = urlParams.get('name') || 'Unknown';
+
+        // Initialize the interface
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCallerInfo();
+            initializeAudio();
+            startCall();
+        });
+
+        function updateCallerInfo() {
+            document.getElementById('callerName').textContent = callerName;
+            document.getElementById('callerNumber').textContent = toNumber || 'Unknown';
+        }
+
+        async function initializeAudio() {
+            try {
+                updateStatus('Requesting microphone access...', 'connecting');
+                
+                // Request microphone permission
+                localStream = await navigator.mediaDevices.getUserMedia({ 
+                    audio: true, 
+                    video: false 
+                });
+                
+                showMessage('Microphone access granted!', 'success');
+                
+                // Initialize Web Audio API
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // Create audio loopback for testing
+                const source = audioContext.createMediaStreamSource(localStream);
+                const destination = audioContext.createMediaStreamDestination();
+                source.connect(destination);
+                
+                audioLoopback = destination.stream;
+                document.getElementById('loopbackAudio').srcObject = audioLoopback;
+                
+            } catch (error) {
+                console.error('Error accessing microphone:', error);
+                showMessage('Error accessing microphone: ' + error.message, 'error');
+                updateStatus('Microphone Error', 'ended');
+            }
+        }
+
+        async function startCall() {
+            try {
+                updateStatus('Initiating call...', 'connecting');
+                
+                const response = await fetch('/api/make-call', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        to: toNumber,
+                        from: fromNumber
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    callControlId = data.data.call_control_id;
+                    callSessionId = data.data.call_session_id;
+                    updateStatus('Call Connected', 'connected');
+                    startCallTimer();
+                    showMessage('Call connected! Use audio test to verify communication.', 'success');
+                } else {
+                    updateStatus('Call Failed', 'ended');
+                    showMessage('Failed to connect call: ' + data.error, 'error');
+                }
+            } catch (error) {
+                console.error('Error starting call:', error);
+                updateStatus('Call Failed', 'ended');
+                showMessage('Failed to start call: ' + error.message, 'error');
+            }
+        }
+
+        function updateStatus(text, status) {
+            document.getElementById('statusText').textContent = text;
+            const indicator = document.getElementById('statusIndicator');
+            indicator.className = 'status-indicator status-' + status;
+        }
+
+        function startCallTimer() {
+            callStartTime = Date.now();
+            callTimer = setInterval(updateCallTimer, 1000);
+        }
+
+        function updateCallTimer() {
+            if (callStartTime) {
+                const elapsed = Math.floor((Date.now() - callStartTime) / 1000);
+                const minutes = Math.floor(elapsed / 60);
+                const seconds = elapsed % 60;
+                document.getElementById('callTimer').textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+        }
+
+        function toggleMute() {
+            isMuted = !isMuted;
+            const muteBtn = document.getElementById('muteBtn');
+            
+            if (isMuted) {
+                if (localStream) {
+                    localStream.getAudioTracks().forEach(track => track.enabled = false);
+                }
+                muteBtn.classList.add('active');
+                muteBtn.innerHTML = '<i class="fas fa-microphone-slash"></i>';
+                showMessage('Microphone muted', 'success');
+            } else {
+                if (localStream) {
+                    localStream.getAudioTracks().forEach(track => track.enabled = true);
+                }
+                muteBtn.classList.remove('active');
+                muteBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+                showMessage('Microphone unmuted', 'success');
+            }
+        }
+
+        function toggleVolume() {
+            isVolumeOff = !isVolumeOff;
+            const volumeBtn = document.getElementById('volumeBtn');
+            
+            if (isVolumeOff) {
+                volumeBtn.classList.add('active');
+                volumeBtn.innerHTML = '<i class="fas fa-volume-mute"></i>';
+                showMessage('Volume muted', 'success');
+            } else {
+                volumeBtn.classList.remove('active');
+                volumeBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+                showMessage('Volume unmuted', 'success');
+            }
+        }
+
+        function toggleKeypad() {
+            const keypad = document.getElementById('keypad');
+            keypad.classList.toggle('show');
+        }
+
+        async function sendDTMF(tone) {
+            if (!callControlId) return;
+            
+            try {
+                await fetch(`/api/send-dtmf`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        call_control_id: callControlId,
+                        digits: tone
+                    })
+                });
+                showMessage('DTMF tone sent: ' + tone, 'success');
+            } catch (error) {
+                console.error('Error sending DTMF:', error);
+                showMessage('Failed to send DTMF tone', 'error');
+            }
+        }
+
+        async function hangup() {
+            if (callTimer) {
+                clearInterval(callTimer);
+            }
+            
+            updateStatus('Ending call...', 'ended');
+            showMessage('Ending call...', 'success');
+            
+            if (callControlId) {
+                try {
+                    await fetch(`/api/hangup-call`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            call_control_id: callControlId
+                        })
+                    });
+                } catch (error) {
+                    console.error('Error hanging up:', error);
+                }
+            }
+            
+            setTimeout(() => {
+                window.close();
+            }, 2000);
+        }
+
+        // Audio testing functions
+        function testMicrophone() {
+            if (!localStream) {
+                showMessage('No microphone access', 'error');
+                return;
+            }
+            
+            showMessage('Testing microphone... Speak now!', 'warning');
+            
+            // Play a test tone through the microphone
+            if (audioContext) {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.setValueAtTime(440, audioContext.currentTime);
+                gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                
+                oscillator.start();
+                oscillator.stop(audioContext.currentTime + 0.5);
+            }
+        }
+
+        function testSpeaker() {
+            const testAudio = document.getElementById('testAudio');
+            testAudio.src = 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT';
+            testAudio.play();
+            showMessage('Playing test tone through speaker', 'success');
+        }
+
+        function startAudioLoop() {
+            if (!audioLoopback) {
+                showMessage('No audio loopback available', 'error');
+                return;
+            }
+            
+            const loopbackAudio = document.getElementById('loopbackAudio');
+            loopbackAudio.play();
+            showMessage('Audio loopback started - you should hear yourself', 'success');
+        }
+
+        function showMessage(message, type) {
+            const container = document.getElementById('messageContainer');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = type === 'error' ? 'error-message' : 
+                                  type === 'warning' ? 'warning-message' : 'success-message';
+            messageDiv.textContent = message;
+            
+            container.innerHTML = '';
+            container.appendChild(messageDiv);
+            
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 3000);
+        }
+
+        // Handle page unload
+        window.addEventListener('beforeunload', function() {
+            if (callTimer) {
+                clearInterval(callTimer);
+            }
+            if (callControlId) {
+                hangup();
+            }
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+            }
+        });
+    </script>
+</body>
+</html> 

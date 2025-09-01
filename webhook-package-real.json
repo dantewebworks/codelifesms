@@ -1,0 +1,17 @@
+{
+  "name": "telnyx-webhook-server",
+  "version": "1.0.0",
+  "description": "Real webhook server for Telnyx SMS",
+  "main": "webhook-server.js",
+  "scripts": {
+    "start": "node webhook-server.js",
+    "dev": "node webhook-server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5"
+  },
+  "engines": {
+    "node": ">=16.x"
+  }
+}

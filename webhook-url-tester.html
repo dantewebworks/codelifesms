@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quick Webhook URL Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        input { width: 400px; padding: 10px; margin: 10px 0; }
+        button { padding: 10px 20px; margin: 5px; background: #007cba; color: white; border: none; border-radius: 4px; }
+        .result { padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Quick Webhook URL Test</h1>
+    
+    <div>
+        <label>Enter your new webhook URL:</label><br>
+        <input type="url" id="webhookUrl" placeholder="https://webhook-final-abc123.vercel.app">
+        <br>
+        <button onclick="testUrl()">Test URL</button>
+        <button onclick="testMessages()">Test Messages</button>
+    </div>
+    
+    <div id="result"></div>
+    
+    <script>
+        function showResult(message, type) {
+            const result = document.getElementById('result');
+            result.className = 'result ' + type;
+            result.innerHTML = message;
+        }
+        
+        async function testUrl() {
+            const url = document.getElementById('webhookUrl').value.trim();
+            if (!url) {
+                showResult('❌ Please enter a URL', 'error');
+                return;
+            }
+            
+            showResult('🔄 Testing: ' + url, 'info');
+            
+            try {
+                const response = await fetch(url);
+                if (response.ok) {
+                    const data = await response.json();
+                    showResult('✅ SUCCESS! Webhook is working!<br><br>' + 
+                              '<strong>Response:</strong><br>' + 
+                              JSON.stringify(data, null, 2), 'success');
+                } else {
+                    showResult('❌ ERROR: ' + response.status + ' ' + response.statusText, 'error');
+                }
+            } catch (error) {
+                showResult('❌ FAILED: ' + error.message + '<br><br>' +
+                          '<strong>This means:</strong><br>' +
+                          '• URL is wrong<br>' +
+                          '• Webhook not deployed<br>' +
+                          '• Network issue', 'error');
+            }
+        }
+        
+        async function testMessages() {
+            const url = document.getElementById('webhookUrl').value.trim();
+            if (!url) {
+                showResult('❌ Please enter a URL', 'error');
+                return;
+            }
+            
+            const messagesUrl = url.replace(/\/$/, '') + '/messages';
+            showResult('🔄 Testing messages: ' + messagesUrl, 'info');
+            
+            try {
+                const response = await fetch(messagesUrl);
+                if (response.ok) {
+                    const data = await response.json();
+                    showResult('✅ MESSAGES WORK!<br><br>' + 
+                              '<strong>Messages found:</strong> ' + (data.messages?.length || 0) + '<br>' +
+                              '<strong>Response:</strong><br>' + 
+                              JSON.stringify(data, null, 2), 'success');
+                } else {
+                    showResult('❌ Messages endpoint failed: ' + response.status, 'error');
+                }
+            } catch (error) {
+                showResult('❌ Messages test failed: ' + error.message, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

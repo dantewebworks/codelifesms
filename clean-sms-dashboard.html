@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clean SMS Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .card h3 {
+            margin-bottom: 15px;
+            color: #2563eb;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #2563eb;
+        }
+
+        .btn {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background 0.3s;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-success {
+            background: #059669;
+        }
+
+        .btn-success:hover {
+            background: #047857;
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+
+        .status {
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-weight: 600;
+        }
+
+        .status.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .status.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+
+        .status.info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #93c5fd;
+        }
+
+        .message-item {
+            padding: 15px;
+            border-bottom: 1px solid #e5e7eb;
+            transition: background 0.3s;
+        }
+
+        .message-item:hover {
+            background: #f9fafb;
+        }
+
+        .message-item:last-child {
+            border-bottom: none;
+        }
+
+        .message-from {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 5px;
+        }
+
+        .message-text {
+            color: #4b5563;
+            margin-bottom: 5px;
+            line-height: 1.5;
+        }
+
+        .message-time {
+            color: #9ca3af;
+            font-size: 12px;
+        }
+
+        .char-counter {
+            text-align: right;
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 5px;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #6b7280;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #6b7280;
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-sms"></i> Clean SMS Dashboard</h1>
+            <p>Simple, clean interface for sending and receiving SMS messages</p>
+        </div>
+
+        <div class="grid">
+            <!-- API Configuration -->
+            <div class="card">
+                <h3><i class="fas fa-cog"></i> API Configuration</h3>
+                
+                <div class="form-group">
+                    <label>Telnyx API Key</label>
+                    <input type="password" id="apiKey" placeholder="Enter your Telnyx API key">
+                </div>
+                
+                <div class="form-group">
+                    <label>Webhook URL</label>
+                    <input type="url" id="webhookUrl" placeholder="https://your-ngrok-url.ngrok.io">
+                    <small style="color: #6b7280; font-size: 12px;">Your ngrok URL (without /webhook/sms)</small>
+                </div>
+                
+                <button class="btn" onclick="saveSettings()">
+                    <i class="fas fa-save"></i> Save Settings
+                </button>
+                
+                <button class="btn btn-secondary" onclick="testWebhook()">
+                    <i class="fas fa-vial"></i> Test Webhook
+                </button>
+                
+                <div id="configStatus"></div>
+            </div>
+
+            <!-- Send SMS -->
+            <div class="card">
+                <h3><i class="fas fa-paper-plane"></i> Send SMS</h3>
+                
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <input type="tel" id="phoneNumber" placeholder="+1234567890">
+                </div>
+                
+                <div class="form-group">
+                    <label>Message</label>
+                    <textarea id="messageText" rows="4" placeholder="Enter your message..." maxlength="160"></textarea>
+                    <div class="char-counter" id="charCounter">0/160</div>
+                </div>
+                
+                <button class="btn btn-success" onclick="sendSMS()">
+                    <i class="fas fa-paper-plane"></i> Send SMS
+                </button>
+                
+                <div id="smsStatus"></div>
+            </div>
+        </div>
+
+        <!-- Incoming Messages -->
+        <div class="card full-width">
+            <h3><i class="fas fa-inbox"></i> Incoming Messages</h3>
+            
+            <button class="btn btn-secondary" onclick="refreshMessages()">
+                <i class="fas fa-sync"></i> Refresh Messages
+            </button>
+            
+            <div id="incomingMessages">
+                <div class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <p>No incoming messages yet</p>
+                    <small>Messages will appear here when someone texts your Telnyx number</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let apiKey = '';
+        let webhookUrl = '';
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSettings();
+            setupCharCounter();
+            
+            // Auto-refresh messages every 30 seconds
+            setInterval(refreshMessages, 30000);
+            
+            console.log('✅ Clean SMS Dashboard loaded');
+        });
+
+        // Setup character counter
+        function setupCharCounter() {
+            const messageInput = document.getElementById('messageText');
+            const charCounter = document.getElementById('charCounter');
+            
+            messageInput.addEventListener('input', function() {
+                const length = this.value.length;
+                charCounter.textContent = `${length}/160`;
+                
+                if (length > 140) {
+                    charCounter.style.color = '#dc2626';
+                } else if (length > 120) {
+                    charCounter.style.color = '#f59e0b';
+                } else {
+                    charCounter.style.color = '#6b7280';
+                }
+            });
+        }
+
+        // Save settings
+        function saveSettings() {
+            apiKey = document.getElementById('apiKey').value.trim();
+            webhookUrl = document.getElementById('webhookUrl').value.trim();
+            
+            if (!apiKey) {
+                showStatus('configStatus', 'Please enter your API key', 'error');
+                return;
+            }
+            
+            // Save to localStorage
+            localStorage.setItem('cleanSMS_apiKey', apiKey);
+            localStorage.setItem('cleanSMS_webhookUrl', webhookUrl);
+            
+            showStatus('configStatus', '✅ Settings saved successfully!', 'success');
+            
+            console.log('✅ Settings saved:', { apiKey: apiKey.substring(0, 10) + '...', webhookUrl });
+        }
+
+        // Load settings
+        function loadSettings() {
+            const savedApiKey = localStorage.getItem('cleanSMS_apiKey');
+            const savedWebhookUrl = localStorage.getItem('cleanSMS_webhookUrl');
+            
+            if (savedApiKey) {
+                document.getElementById('apiKey').value = savedApiKey;
+                apiKey = savedApiKey;
+            }
+            
+            if (savedWebhookUrl) {
+                document.getElementById('webhookUrl').value = savedWebhookUrl;
+                webhookUrl = savedWebhookUrl;
+            }
+            
+            if (savedApiKey || savedWebhookUrl) {
+                showStatus('configStatus', '✅ Settings loaded from storage', 'info');
+            }
+        }
+
+        // Test webhook
+        async function testWebhook() {
+            if (!webhookUrl) {
+                showStatus('configStatus', 'Please enter and save your webhook URL first', 'error');
+                return;
+            }
+            
+            showStatus('configStatus', 'Testing webhook...', 'info');
+            
+            try {
+                // Test the messages endpoint
+                const messagesUrl = `${webhookUrl}/messages`;
+                console.log('🧪 Testing:', messagesUrl);
+                
+                const response = await fetch(messagesUrl);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    showStatus('configStatus', 
+                        `✅ Webhook working! Found ${data.messages?.length || 0} messages`, 'success');
+                    
+                    // Also refresh messages
+                    refreshMessages();
+                } else {
+                    showStatus('configStatus', `❌ Webhook test failed: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                showStatus('configStatus', `❌ Webhook error: ${error.message}`, 'error');
+            }
+        }
+
+        // Send SMS
+        async function sendSMS() {
+            const phone = document.getElementById('phoneNumber').value.trim();
+            const message = document.getElementById('messageText').value.trim();
+            
+            if (!apiKey) {
+                showStatus('smsStatus', 'Please configure your API key first', 'error');
+                return;
+            }
+            
+            if (!phone || !message) {
+                showStatus('smsStatus', 'Please enter both phone number and message', 'error');
+                return;
+            }
+            
+            showStatus('smsStatus', 'Sending SMS...', 'info');
+            
+            try {
+                const response = await fetch('https://api.telnyx.com/v2/messages', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        from: '+18137420762', // Your Telnyx number
+                        to: phone,
+                        text: message
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    showStatus('smsStatus', '✅ SMS sent successfully!', 'success');
+                    
+                    // Clear form
+                    document.getElementById('phoneNumber').value = '';
+                    document.getElementById('messageText').value = '';
+                    document.getElementById('charCounter').textContent = '0/160';
+                    
+                    console.log('✅ SMS sent:', data);
+                } else {
+                    const error = await response.json();
+                    showStatus('smsStatus', `❌ SMS failed: ${error.errors?.[0]?.detail || 'Unknown error'}`, 'error');
+                }
+            } catch (error) {
+                showStatus('smsStatus', `❌ SMS error: ${error.message}`, 'error');
+            }
+        }
+
+        // Refresh incoming messages
+        async function refreshMessages() {
+            if (!webhookUrl) {
+                console.log('No webhook URL configured');
+                return;
+            }
+            
+            const container = document.getElementById('incomingMessages');
+            container.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading messages...</div>';
+            
+            try {
+                const messagesUrl = `${webhookUrl}/messages`;
+                console.log('🔄 Fetching messages from:', messagesUrl);
+                
+                const response = await fetch(messagesUrl);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('📨 Received:', data);
+                    
+                    displayMessages(data.messages || []);
+                } else {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <p>Could not load messages</p>
+                            <small>Status: ${response.status}</small>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('❌ Error loading messages:', error);
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-wifi"></i>
+                        <p>Connection error</p>
+                        <small>${error.message}</small>
+                    </div>
+                `;
+            }
+        }
+
+        // Display messages
+        function displayMessages(messages) {
+            const container = document.getElementById('incomingMessages');
+            
+            if (!messages || messages.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <p>No incoming messages yet</p>
+                        <small>Messages will appear here when someone texts your Telnyx number</small>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = `<div style="margin-bottom: 15px; padding: 10px; background: #d1fae5; border-radius: 8px; color: #065f46;">
+                <strong>📨 ${messages.length} incoming messages</strong>
+            </div>`;
+            
+            messages.forEach(msg => {
+                const time = new Date(msg.timestamp).toLocaleString();
+                html += `
+                    <div class="message-item">
+                        <div class="message-from">📱 From: ${msg.from}</div>
+                        <div class="message-text">${msg.text}</div>
+                        <div class="message-time">${time}</div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+            console.log('✅ Displayed', messages.length, 'messages');
+        }
+
+        // Show status message
+        function showStatus(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            if (!element) return;
+            
+            element.innerHTML = `<div class="status ${type}">${message}</div>`;
+            
+            // Auto-hide after 5 seconds for success messages
+            if (type === 'success') {
+                setTimeout(() => {
+                    element.innerHTML = '';
+                }, 5000);
+            }
+        }
+    </script>
+</body>
+</html>

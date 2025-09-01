@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Webhook Direct</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        input { width: 400px; padding: 10px; margin: 10px 0; }
+        button { padding: 10px 20px; margin: 5px; background: #007cba; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .result { padding: 15px; margin: 10px 0; border-radius: 5px; white-space: pre-wrap; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Direct Webhook Test</h1>
+    
+    <div>
+        <label>Your ngrok URL:</label><br>
+        <input type="url" id="ngrokUrl" placeholder="https://abc123.ngrok-free.app">
+        <br><br>
+        
+        <button onclick="testBackend()">1. Test Backend</button>
+        <button onclick="testMessages()">2. Test Messages</button>
+        <button onclick="addTestMessage()">3. Add Test Message</button>
+        <button onclick="testWebhook()">4. Test Webhook</button>
+    </div>
+    
+    <div id="results"></div>
+    
+    <script>
+        function addResult(title, content, type) {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = 'result ' + type;
+            div.innerHTML = `<strong>${title}</strong>\n${content}`;
+            results.appendChild(div);
+        }
+        
+        async function testBackend() {
+            try {
+                const response = await fetch('http://localhost:3000/');
+                const data = await response.json();
+                addResult('✅ Backend Test', JSON.stringify(data, null, 2), 'success');
+            } catch (error) {
+                addResult('❌ Backend Test Failed', error.message, 'error');
+            }
+        }
+        
+        async function testMessages() {
+            try {
+                const response = await fetch('http://localhost:3000/messages');
+                const data = await response.json();
+                addResult('✅ Messages Test', `Found ${data.count} messages:\n${JSON.stringify(data, null, 2)}`, 'success');
+            } catch (error) {
+                addResult('❌ Messages Test Failed', error.message, 'error');
+            }
+        }
+        
+        async function addTestMessage() {
+            try {
+                const response = await fetch('http://localhost:3000/test-message', { method: 'POST' });
+                const data = await response.json();
+                addResult('✅ Test Message Added', JSON.stringify(data, null, 2), 'success');
+                
+                // Also check messages
+                setTimeout(testMessages, 500);
+            } catch (error) {
+                addResult('❌ Add Test Message Failed', error.message, 'error');
+            }
+        }
+        
+        async function testWebhook() {
+            const ngrokUrl = document.getElementById('ngrokUrl').value.trim();
+            if (!ngrokUrl) {
+                addResult('❌ Webhook Test Failed', 'Please enter your ngrok URL', 'error');
+                return;
+            }
+            
+            const webhookUrl = ngrokUrl + '/webhook/sms';
+            
+            const testPayload = {
+                data: {
+                    event_type: 'message.received',
+                    payload: {
+                        id: 'test-' + Date.now(),
+                        from: { phone_number: '+1234567890' },
+                        to: [{ phone_number: '+18137420762' }],
+                        text: 'Test message from webhook tester',
+                        received_at: new Date().toISOString()
+                    }
+                }
+            };
+            
+            try {
+                const response = await fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(testPayload)
+                });
+                
+                const data = await response.json();
+                addResult('✅ Webhook Test', `Webhook responded:\n${JSON.stringify(data, null, 2)}`, 'success');
+                
+                // Check if message was stored
+                setTimeout(testMessages, 1000);
+            } catch (error) {
+                addResult('❌ Webhook Test Failed', `URL: ${webhookUrl}\nError: ${error.message}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+{
+  "name": "sms-webhook-server",
+  "version": "1.0.0",
+  "description": "Public SMS webhook server for Telnyx",
+  "main": "public-webhook.js",
+  "type": "module",
+  "scripts": {
+    "start": "node public-webhook.js",
+    "dev": "node public-webhook.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
