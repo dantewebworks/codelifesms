@@ -1,8 +1,7 @@
 {
-  "builds": [
-    { "src": "public/**", "use": "@vercel/static" }
-  ],
   "routes": [
+    { "src": "/webhook/sms", "dest": "/api/webhook.js" },
+    { "src": "/webhook/voice", "dest": "/api/voice.js" },
     { "src": "/api/(.*)", "dest": "/api/$1" },
     { "src": "/", "dest": "public/sms-dashboard-fixed.html" },
     { "src": "/(.*)", "dest": "public/$1" }

@@ -1847,9 +1847,18 @@
                 </div>
                 <div id="business-hours-status" style="margin-top: 15px; padding: 10px; border-radius: 6px; background: #f8fafc; border: 1px solid #e2e8f0;"></div>
                 <div style="margin-top: 15px;">
-                    <strong>Backend URL:</strong> https://codelife-sms-app-48d5c9e059b8.herokuapp.com/<br>
-                    <strong>Webhook URL:</strong> https://codelife-sms-app-48d5c9e059b8.herokuapp.com/webhook/sms
+                    <strong>Backend URL:</strong> <span id="backendUrl"></span><br>
+                    <strong>Webhook URL:</strong> <span id="webhookUrl"></span>
                 </div>
+                <script>
+                    (function() {
+                        const origin = window.location.origin;
+                        const backendUrlEl = document.getElementById('backendUrl');
+                        const webhookUrlEl = document.getElementById('webhookUrl');
+                        if (backendUrlEl) backendUrlEl.textContent = origin + '/';
+                        if (webhookUrlEl) webhookUrlEl.textContent = origin + '/webhook/sms';
+                    })();
+                </script>
             </div>
 
             <div class="card">
