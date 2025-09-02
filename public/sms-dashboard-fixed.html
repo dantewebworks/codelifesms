@@ -41,6 +41,7 @@
     <link rel="apple-touch-startup-image" media="screen and (device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 1)" href="/splash-768x1024.png">
     
     <title>CodeLife SMS</title>
+    <meta name="default-backend-base-url" content="https://f61659d2cb49.ngrok-free.app">
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="/manifest.json">
@@ -1876,11 +1877,25 @@
                 <script>
                     (function() {
                         const origin = window.location.origin;
-                        const backendBase = localStorage.getItem('backendBaseUrl') || origin;
+                        // Resolve default backend from localStorage, meta tag, or global var
+                        let backendBase = localStorage.getItem('backendBaseUrl');
+                        if (!backendBase) {
+                            const metaEl = document.querySelector('meta[name="default-backend-base-url"]');
+                            const metaUrl = metaEl && typeof metaEl.content === 'string' ? metaEl.content.trim() : '';
+                            const globalDefault = (typeof window !== 'undefined' && window.DEFAULT_BACKEND_BASE_URL && /^https?:\/\//i.test(window.DEFAULT_BACKEND_BASE_URL)) ? window.DEFAULT_BACKEND_BASE_URL.trim() : '';
+                            const candidate = metaUrl && /^https?:\/\//i.test(metaUrl) ? metaUrl : (globalDefault || '');
+                            if (candidate) {
+                                backendBase = candidate.replace(/\/$/, '');
+                                try { localStorage.setItem('backendBaseUrl', backendBase); } catch(_) {}
+                                console.log('🔧 Backend base set from default configuration (early):', backendBase);
+                            }
+                        }
+                        backendBase = backendBase || origin;
+
                         const backendUrlEl = document.getElementById('backendUrl');
                         const webhookUrlDisplayEl = document.getElementById('webhookUrlDisplay');
                         const savedWebhook = localStorage.getItem('webhookUrl') || (origin + '/webhook/sms');
-                        if (backendUrlEl) backendUrlEl.textContent = backendBase + '/';
+                        if (backendUrlEl) backendUrlEl.textContent = backendBase.replace(/\/$/,'') + '/';
                         if (webhookUrlDisplayEl) webhookUrlDisplayEl.textContent = savedWebhook;
                     })();
                 </script>
@@ -2906,6 +2921,29 @@
 
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', function () {
+            // Auto-set backend from ?backend= URL param (persist to localStorage)
+            try {
+                const params = new URLSearchParams(window.location.search);
+                const backendFromQuery = params.get('backend');
+                if (backendFromQuery && /^https?:\/\//i.test(backendFromQuery)) {
+                    localStorage.setItem('backendBaseUrl', backendFromQuery.replace(/\/$/, ''));
+                    console.log('🔧 Backend base set from URL param:', backendFromQuery);
+                }
+            } catch (e) { /* no-op */ }
+
+            // If no saved backend, try meta tag or global default, then persist
+            try {
+                if (!localStorage.getItem('backendBaseUrl')) {
+                    const metaEl = document.querySelector('meta[name="default-backend-base-url"]');
+                    const metaUrl = metaEl && typeof metaEl.content === 'string' ? metaEl.content.trim() : '';
+                    const globalDefault = (typeof window !== 'undefined' && window.DEFAULT_BACKEND_BASE_URL && /^https?:\/\//i.test(window.DEFAULT_BACKEND_BASE_URL)) ? window.DEFAULT_BACKEND_BASE_URL.trim() : '';
+                    const candidate = metaUrl && /^https?:\/\//i.test(metaUrl) ? metaUrl : (globalDefault || '');
+                    if (candidate) {
+                        localStorage.setItem('backendBaseUrl', candidate.replace(/\/$/, ''));
+                        console.log('🔧 Backend base set from default configuration:', candidate);
+                    }
+                }
+            } catch (_) { /* no-op */ }
             // Load read state
             loadConversationReadState();
             // Force load API settings on mobile
@@ -2929,7 +2967,16 @@
                 apiKey = savedApiKey;
             }
             const backendBaseEl = document.getElementById('backendBaseUrlInput');
-            if (backendBaseEl) backendBaseEl.value = savedBackendBaseUrl || window.location.origin;
+            if (backendBaseEl) {
+                const effectiveBackend = localStorage.getItem('backendBaseUrl') || savedBackendBaseUrl || window.location.origin;
+                backendBaseEl.value = effectiveBackend;
+                // Persist on change so it survives reloads even if user forgets to Save
+                backendBaseEl.addEventListener('change', () => {
+                    const val = backendBaseEl.value.trim();
+                    if (val) localStorage.setItem('backendBaseUrl', val.replace(/\/$/, ''));
+                    updateSystemStatus();
+                });
+            }
             const webhookInputEl = document.getElementById('webhookUrlInput');
             if (webhookInputEl) {
                 if (savedWebhookUrl) {
@@ -2977,6 +3024,9 @@
 
             // Test backend connection
             updateSystemStatus();
+            // Also surface the backend URL under System Status immediately
+            const backendSpan = document.getElementById('backendUrl');
+            if (backendSpan) backendSpan.textContent = getBackendBaseUrl() + '/';
 
             // Load initial stats
             updateStats();
@@ -3348,10 +3398,17 @@
 
         // Test API connection
         function getBackendBaseUrl() {
+            // Prefer URL param (already persisted on load), else localStorage, else origin
             return (localStorage.getItem('backendBaseUrl') || window.location.origin).replace(/\/$/, '');
         }
 
         async function testAPIConnection() {
+            // Persist backend base URL from the settings input before testing
+            const backendBaseInputEl = document.getElementById('backendBaseUrlInput');
+            if (backendBaseInputEl && backendBaseInputEl.value.trim()) {
+                localStorage.setItem('backendBaseUrl', backendBaseInputEl.value.trim().replace(/\/$/, ''));
+            }
+
             const apiKeyInput = document.getElementById('apiKey').value.trim();
             const statusDiv = document.getElementById('apiStatus');
 

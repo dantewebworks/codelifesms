@@ -1,0 +1,138 @@
+🚀 Starting CodeLife SMS Platform...
+📋 Configuration loaded from: /Users/danteactiveleads/Desktop/CodeLifeSMS/startup-config.json
+🔄 Killing existing processes...
+✅ Existing processes killed
+🚀 Starting backend server...
+🚀 CodeLife SMS Backend running on port 3000
+📁 Static files served from: /Users/danteactiveleads/Desktop/CodeLifeSMS/public
+🔗 API endpoints available at: http://localhost:3000/api/
+✅ Backend server started
+🌐 Starting ngrok tunnel...
+🌐 Ngrok: Flag --region has been deprecated, ngrok automatically chooses the region with lowest latency
+✅ Ngrok API is ready
+🌐 Opening dashboard...
+✅ Dashboard opened in browser
+
+🎉 CodeLife SMS Platform is ready!
+📱 Dashboard: file:///Users/danteactiveleads/Desktop/CodeLifeSMS/sms-dashboard-fixed.html
+🔗 SMS Webhook: 
+🔗 Voice Webhook: 
+
+💡 Press Ctrl+C to stop all services
+🧪 GET /api/test requested
+🔑 Testing API connection with key: KEY01990B6...
+📡 API Response status: 200
+📡 API Response headers: {
+  'cache-control': 'no-store',
+  'cf-cache-status': 'DYNAMIC',
+  'cf-ray': '978f1e5f9e56ccdb-MIA',
+  connection: 'keep-alive',
+  'content-encoding': 'gzip',
+  'content-length': '593',
+  'content-type': 'application/json; charset=utf-8',
+  date: 'Tue, 02 Sep 2025 18:37:26 GMT',
+  'per-page': '100',
+  'referrer-policy': 'strict-origin-when-cross-origin',
+  server: 'cloudflare',
+  'strict-transport-security': 'max-age=0',
+  total: '1',
+  'total-pages': '1',
+  vary: 'Accept-Encoding, Origin',
+  'x-content-type-options': 'nosniff',
+  'x-envoy-upstream-service-time': '206',
+  'x-frame-options': 'SAMEORIGIN',
+  'x-permitted-cross-domain-policies': 'none',
+  'x-ratelimit-limit': '5, 5;w=1',
+  'x-ratelimit-remaining': '4',
+  'x-ratelimit-reset': '1',
+  'x-request-id': '92bd7a55-b987-998b-8513-d01470a2f2b0',
+  'x-xss-protection': '0'
+}
+✅ API connection successful, found 1 phone numbers
+🔑 Testing API connection with key: KEY01990B6...
+📡 API Response status: 200
+📡 API Response headers: {
+  'cache-control': 'no-store',
+  'cf-cache-status': 'DYNAMIC',
+  'cf-ray': '978f1fbf2d0ae5e4-IAD',
+  connection: 'keep-alive',
+  'content-encoding': 'gzip',
+  'content-length': '593',
+  'content-type': 'application/json; charset=utf-8',
+  date: 'Tue, 02 Sep 2025 18:38:22 GMT',
+  'per-page': '100',
+  'referrer-policy': 'strict-origin-when-cross-origin',
+  server: 'cloudflare',
+  'strict-transport-security': 'max-age=0',
+  total: '1',
+  'total-pages': '1',
+  vary: 'Accept-Encoding, Origin',
+  'x-content-type-options': 'nosniff',
+  'x-envoy-upstream-service-time': '194',
+  'x-frame-options': 'SAMEORIGIN',
+  'x-permitted-cross-domain-policies': 'none',
+  'x-ratelimit-limit': '5, 5;w=1',
+  'x-ratelimit-remaining': '4',
+  'x-ratelimit-reset': '1',
+  'x-request-id': '78cf73db-517f-9749-bdeb-9bbc68933e71',
+  'x-xss-protection': '0'
+}
+✅ API connection successful, found 1 phone numbers
+🔑 Testing API connection with key: KEY01990B6...
+📡 API Response status: 200
+📡 API Response headers: {
+  'cache-control': 'no-store',
+  'cf-cache-status': 'DYNAMIC',
+  'cf-ray': '978fad438da3a533-MIA',
+  connection: 'keep-alive',
+  'content-encoding': 'gzip',
+  'content-length': '591',
+  'content-type': 'application/json; charset=utf-8',
+  date: 'Tue, 02 Sep 2025 20:14:59 GMT',
+  'per-page': '100',
+  'referrer-policy': 'strict-origin-when-cross-origin',
+  server: 'cloudflare',
+  'strict-transport-security': 'max-age=0',
+  total: '1',
+  'total-pages': '1',
+  vary: 'Accept-Encoding, Origin',
+  'x-content-type-options': 'nosniff',
+  'x-envoy-upstream-service-time': '164',
+  'x-frame-options': 'SAMEORIGIN',
+  'x-permitted-cross-domain-policies': 'none',
+  'x-ratelimit-limit': '5, 5;w=1',
+  'x-ratelimit-remaining': '4',
+  'x-ratelimit-reset': '1',
+  'x-request-id': '1af1ad8b-1f1b-9f82-8992-393c53c0b306',
+  'x-xss-protection': '0'
+}
+✅ API connection successful, found 1 phone numbers
+🔑 Testing API connection with key: KEY01990B6...
+📡 API Response status: 200
+📡 API Response headers: {
+  'cache-control': 'no-store',
+  'cf-cache-status': 'DYNAMIC',
+  'cf-ray': '978fadf53ae73015-MIA',
+  connection: 'keep-alive',
+  'content-encoding': 'gzip',
+  'content-length': '593',
+  'content-type': 'application/json; charset=utf-8',
+  date: 'Tue, 02 Sep 2025 20:15:27 GMT',
+  'per-page': '100',
+  'referrer-policy': 'strict-origin-when-cross-origin',
+  server: 'cloudflare',
+  'strict-transport-security': 'max-age=0',
+  total: '1',
+  'total-pages': '1',
+  vary: 'Accept-Encoding, Origin',
+  'x-content-type-options': 'nosniff',
+  'x-envoy-upstream-service-time': '160',
+  'x-frame-options': 'SAMEORIGIN',
+  'x-permitted-cross-domain-policies': 'none',
+  'x-ratelimit-limit': '5, 5;w=1',
+  'x-ratelimit-remaining': '4',
+  'x-ratelimit-reset': '1',
+  'x-request-id': 'f6335618-3a14-904d-9296-8f43969fc761',
+  'x-xss-protection': '0'
+}
+✅ API connection successful, found 1 phone numbers
