@@ -1876,10 +1876,11 @@
                 <script>
                     (function() {
                         const origin = window.location.origin;
+                        const backendBase = localStorage.getItem('backendBaseUrl') || origin;
                         const backendUrlEl = document.getElementById('backendUrl');
                         const webhookUrlDisplayEl = document.getElementById('webhookUrlDisplay');
                         const savedWebhook = localStorage.getItem('webhookUrl') || (origin + '/webhook/sms');
-                        if (backendUrlEl) backendUrlEl.textContent = origin + '/';
+                        if (backendUrlEl) backendUrlEl.textContent = backendBase + '/';
                         if (webhookUrlDisplayEl) webhookUrlDisplayEl.textContent = savedWebhook;
                     })();
                 </script>
@@ -2458,6 +2459,11 @@
                     <input type="password" id="apiKey" placeholder="Enter your Telnyx API key">
                 </div>
                 <div class="form-group">
+                    <label>Backend Base URL:</label>
+                    <input type="url" id="backendBaseUrlInput" placeholder="https://your-backend.example.com">
+                    <small style="color:#6b7280">Used for all API calls. Defaults to this site’s origin if left blank.</small>
+                </div>
+                <div class="form-group">
                     <label>Webhook URL:</label>
                     <input type="url" id="webhookUrlInput" placeholder="Enter your webhook URL">
                 </div>
@@ -2912,6 +2918,7 @@
             // Load saved settings
             const savedApiKey = localStorage.getItem('telnyxApiKey');
             const savedWebhookUrl = localStorage.getItem('webhookUrl');
+            const savedBackendBaseUrl = localStorage.getItem('backendBaseUrl');
             const savedPhoneNumbers = localStorage.getItem('telnyxPhoneNumbers');
             const savedContactDatabase = localStorage.getItem('contactDatabase');
             const savedTwilioAccountSid = localStorage.getItem('twilioAccountSid');
@@ -2921,6 +2928,8 @@
                 document.getElementById('apiKey').value = savedApiKey;
                 apiKey = savedApiKey;
             }
+            const backendBaseEl = document.getElementById('backendBaseUrlInput');
+            if (backendBaseEl) backendBaseEl.value = savedBackendBaseUrl || window.location.origin;
             const webhookInputEl = document.getElementById('webhookUrlInput');
             if (webhookInputEl) {
                 if (savedWebhookUrl) {
@@ -3009,7 +3018,7 @@
             // Force reload all messages from server and update storage
             async function forceReloadMessagesFromServer() {
                 try {
-                    const response = await fetch('/messages');
+                    const response = await fetch(getBackendBaseUrl() + '/messages');
                     const data = await response.json();
                     if (data.success) {
                         incomingMessages = data.messages || [];
@@ -3055,10 +3064,11 @@
         function updateSystemStatus() {
             const statusDiv = document.getElementById('systemStatus');
             const webhookUrlStored = localStorage.getItem('webhookUrl') || (window.location.origin + '/webhook/sms');
+            const backendBase = getBackendBaseUrl();
             statusDiv.innerHTML = `
                 <div class="status success">✅ System connected and ready</div>
                 <div style="margin-top: 15px;">
-                    <strong>Backend URL:</strong> ${window.location.origin}/<br>
+                    <strong>Backend URL:</strong> ${backendBase}/<br>
                     <strong>Webhook URL:</strong> ${webhookUrlStored}
                 </div>
             `;
@@ -3116,7 +3126,7 @@
         async function updateStats() {
             try {
                 // Get incoming messages count
-                const messagesResponse = await fetch('/messages');
+                const messagesResponse = await fetch(getBackendBaseUrl() + '/messages');
                 const messagesData = await messagesResponse.json();
                 const incomingCount = messagesData.messages?.length || 0;
 
@@ -3298,7 +3308,7 @@
             }
             
             const baseUrl = window.location.origin;
-            const url = endpoint.startsWith('http') ? endpoint : `${baseUrl}${endpoint}`;
+            const url = endpoint.startsWith('http') ? endpoint : `${getBackendBaseUrl()}${endpoint}`;
             
             const defaultOptions = {
                 method: 'GET',
@@ -3337,6 +3347,10 @@
         }
 
         // Test API connection
+        function getBackendBaseUrl() {
+            return (localStorage.getItem('backendBaseUrl') || window.location.origin).replace(/\/$/, '');
+        }
+
         async function testAPIConnection() {
             const apiKeyInput = document.getElementById('apiKey').value.trim();
             const statusDiv = document.getElementById('apiStatus');
@@ -3349,7 +3363,7 @@
             statusDiv.innerHTML = '<div class="status info">Testing API connection...</div>';
 
             try {
-                const response = await fetch('/api/test-connection', {
+                const response = await fetch(getBackendBaseUrl() + '/api/test-connection', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -3439,9 +3453,14 @@
             const apiKeyInput = document.getElementById('apiKey').value.trim();
             const webhookUrl = (document.getElementById('webhookUrlInput')?.value || '').trim();
 
+            const backendBaseUrl = (document.getElementById('backendBaseUrlInput')?.value || '').trim();
+
             if (apiKeyInput) {
                 localStorage.setItem('telnyxApiKey', apiKeyInput);
                 apiKey = apiKeyInput;
+            }
+            if (backendBaseUrl) {
+                localStorage.setItem('backendBaseUrl', backendBaseUrl.replace(/\/$/,''));
             }
             if (webhookUrl) {
                 localStorage.setItem('webhookUrl', webhookUrl);
@@ -3466,6 +3485,9 @@
 
             // Clear form fields
             document.getElementById('apiKey').value = '';
+            const backendBaseInput = document.getElementById('backendBaseUrlInput');
+            if (backendBaseInput) backendBaseInput.value = window.location.origin;
+            localStorage.removeItem('backendBaseUrl');
             const webhookInput = document.getElementById('webhookUrlInput');
             if (webhookInput) webhookInput.value = window.location.origin + '/webhook/sms';
             localStorage.removeItem('webhookUrl');
@@ -3543,7 +3565,7 @@
             statusDiv.innerHTML = '<div class="status info">Sending SMS...</div>';
 
             try {
-                const response = await fetch('/api/send-sms', {
+                const response = await fetch(getBackendBaseUrl() + '/api/send-sms', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -4204,7 +4226,7 @@
 
                 // Then try to fetch new messages from backend
                 console.log('🔄 Fetching new messages from backend...');
-                const response = await fetch('/api/incoming-messages');
+                const response = await fetch(getBackendBaseUrl() + '/api/incoming-messages');
 
                 if (response.ok) {
                     const data = await response.json();
@@ -4788,7 +4810,7 @@
             try {
                 console.log('📊 Generating CSV export for:', Object.keys(groupedResults));
                 
-                const response = await fetch('/api/export-csv', {
+                const response = await fetch(getBackendBaseUrl() + '/api/export-csv', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -4891,7 +4913,7 @@
             console.log('🔄 Force reloading messages from server...');
             try {
                 // Load incoming messages from server
-                const incomingResponse = await fetch('/api/incoming-messages');
+                const incomingResponse = await fetch(getBackendBaseUrl() + '/api/incoming-messages');
                 if (incomingResponse.ok) {
                     const incomingData = await incomingResponse.json();
                     console.log('📱 Server incoming messages:', incomingData.messages?.length || 0);
@@ -4901,7 +4923,7 @@
                 }
 
                 // Load sent messages from server
-                const sentResponse = await fetch('/api/sent-messages');
+                const sentResponse = await fetch(getBackendBaseUrl() + '/api/sent-messages');
                 if (sentResponse.ok) {
                     const sentData = await sentResponse.json();
                     console.log('📤 Server sent messages:', sentData.messages?.length || 0);
@@ -5229,7 +5251,7 @@
             }
 
             try {
-                const response = await fetch('/api/send-sms', {
+                const response = await fetch(getBackendBaseUrl() + '/api/send-sms', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -5305,7 +5327,7 @@
 
                 // Try to fetch from backend
                 console.log('🔄 Fetching sent messages from backend...');
-                const response = await fetch('/api/sent-messages');
+                const response = await fetch(getBackendBaseUrl() + '/api/sent-messages');
 
                 if (response.ok) {
                     const data = await response.json();
@@ -5561,7 +5583,7 @@
             }
 
             try {
-                const response = await fetch('/api/send-sms', {
+                const response = await fetch(getBackendBaseUrl() + '/api/send-sms', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -5617,7 +5639,7 @@
         async function checkBackendConnection() {
             console.log('🔍 Checking backend connection...');
             try {
-                const response = await fetch('/api/business-hours-status');
+                const response = await fetch(getBackendBaseUrl() + '/api/business-hours-status');
                 console.log('📡 Backend response status:', response.status);
                 
                 if (response.ok) {
@@ -5640,7 +5662,7 @@
         // Test connection with better error handling
         async function testConnection() {
             const statusDiv = document.getElementById('systemStatus');
-            statusDiv.innerHTML = '<div class="status info">🔄 Testing connection...</div>';
+            statusDiv.innerHTML = '<div class="status info">🔄 Testing connection at ' + getBackendBaseUrl() + ' ...</div>';
 
             try {
                 const isConnected = await checkBackendConnection();
@@ -5652,7 +5674,7 @@
                             <button class="btn btn-sm" onclick="loadAllMessages()" style="margin-right: 5px;">
                                 <i class="fas fa-sync"></i> Load Messages
                             </button>
-                            <button class="btn btn-sm" onclick="window.open(window.location.origin + '/', '_blank')">
+                            <button class="btn btn-sm" onclick="window.open(getBackendBaseUrl() + '/', '_blank')">
                                 <i class="fas fa-external-link-alt"></i> Open Backend URL
                             </button>
                         </div>
@@ -5662,7 +5684,7 @@
                         <div class="status error">❌ Backend Disconnected</div>
                         <div style="margin-top: 10px; font-size: 12px; color: #6b7280;">
                             Make sure the backend is running:<br>
-                            <a href="${window.location.origin}/" target="_blank" style="color: #3b82f6;">
+                            <a href="${getBackendBaseUrl()}/" target="_blank" style="color: #3b82f6;">
                                 ${window.location.origin}/
                             </a>
                         </div>
@@ -5702,7 +5724,7 @@
                         <button class="btn btn-sm" onclick="testConnection()" style="margin-right: 5px;">
                             <i class="fas fa-sync"></i> Test Connection
                         </button>
-                        <button class="btn btn-sm" onclick="window.open(window.location.origin + '/', '_blank')">
+                        <button class="btn btn-sm" onclick="window.open(getBackendBaseUrl() + '/', '_blank')">
                             <i class="fas fa-external-link-alt"></i> Open Backend URL
                         </button>
                     </div>
@@ -5926,7 +5948,7 @@
             document.getElementById('makeCallBtn').disabled = true;
 
             try {
-                const response = await fetch('/api/make-call', {
+                const response = await fetch(getBackendBaseUrl() + '/api/make-call', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -6047,7 +6069,7 @@
                     }
 
                     try {
-                        const response = await fetch('/api/make-call', {
+                        const response = await fetch(getBackendBaseUrl() + '/api/make-call', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json'
@@ -6390,7 +6412,7 @@
                 connectBtn.disabled = true;
 
                 // Get Telnyx token from server
-                const response = await fetch('/api/webrtc-token', {
+                const response = await fetch(getBackendBaseUrl() + '/api/webrtc-token', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
