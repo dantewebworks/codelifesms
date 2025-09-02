@@ -41,7 +41,6 @@
     <link rel="apple-touch-startup-image" media="screen and (device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 1)" href="/splash-768x1024.png">
     
     <title>CodeLife SMS</title>
-    <meta name="default-backend-base-url" content="https://f61659d2cb49.ngrok-free.app">
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="/manifest.json">
@@ -2899,7 +2898,7 @@
         }
 
         // Initialize on page load
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', async function () {
             // Auto-set backend from ?backend= URL param (persist to localStorage)
             try {
                 const params = new URLSearchParams(window.location.search);
@@ -2910,7 +2909,22 @@
                 }
             } catch (e) { /* no-op */ }
 
-            // If no saved backend, try meta tag or global default, then persist
+            // Try to auto-detect ngrok URL if no backend is configured
+            try {
+                if (!localStorage.getItem('backendBaseUrl')) {
+                    console.log('🔍 No backend URL configured, trying to auto-detect ngrok...');
+                    const ngrokUrl = await detectNgrokUrl();
+                    if (ngrokUrl) {
+                        console.log('✅ Successfully auto-detected ngrok URL:', ngrokUrl);
+                    } else {
+                        console.log('ℹ️ No ngrok tunnel found, will use defaults');
+                    }
+                }
+            } catch (e) {
+                console.log('ℹ️ Ngrok detection failed (normal if not using ngrok):', e.message);
+            }
+
+            // If still no saved backend, try meta tag or global default, then persist
             try {
                 if (!localStorage.getItem('backendBaseUrl')) {
                     const metaEl = document.querySelector('meta[name="default-backend-base-url"]');
@@ -3090,9 +3104,35 @@
         }
 
         // Test API connection
+        async function detectNgrokUrl() {
+            try {
+                // Try to detect ngrok tunnel from localhost:4040 API
+                const response = await fetch('http://localhost:4040/api/tunnels');
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.tunnels && data.tunnels.length > 0) {
+                        // Find HTTPS tunnel
+                        const httpsTunnel = data.tunnels.find(tunnel => tunnel.proto === 'https');
+                        if (httpsTunnel && httpsTunnel.public_url) {
+                            console.log('🔗 Auto-detected ngrok URL:', httpsTunnel.public_url);
+                            localStorage.setItem('backendBaseUrl', httpsTunnel.public_url);
+                            return httpsTunnel.public_url;
+                        }
+                    }
+                }
+            } catch (error) {
+                console.log('ℹ️ Ngrok API not available (normal if not using ngrok):', error.message);
+            }
+            return null;
+        }
+
         function getBackendBaseUrl() {
             // Prefer URL param (already persisted on load), else localStorage, else origin
-            return (localStorage.getItem('backendBaseUrl') || window.location.origin).replace(/\/$/, '');
+            const stored = localStorage.getItem('backendBaseUrl');
+            if (stored) {
+                return stored.replace(/\/$/, '');
+            }
+            return window.location.origin.replace(/\/$/, '');
         }
 
         // Update system status
