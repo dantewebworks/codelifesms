@@ -2621,6 +2621,8 @@
         let allMessages = []; // Combined incoming and sent messages
         let incomingMessages = [];
         let sentMessages = [];
+        // Per-conversation read state: { "+1xxxxxxxxxx": timestamp_ms }
+        let conversationReadState = {};
 
         // Business hours configuration
         const BUSINESS_HOURS = {
@@ -2897,6 +2899,8 @@
 
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', function () {
+            // Load read state
+            loadConversationReadState();
             // Force load API settings on mobile
             if (window.innerWidth <= 768) {
                 loadSettings();
@@ -3146,6 +3150,27 @@
                 console.error('Error updating stats:', error);
                 // Keep current values if there's an error
             }
+        }
+
+        // Read-state helpers
+        function loadConversationReadState() {
+            try {
+                const raw = localStorage.getItem('conversationReadState');
+                conversationReadState = raw ? JSON.parse(raw) : {};
+            } catch (_) {
+                conversationReadState = {};
+            }
+        }
+        function saveConversationReadState() {
+            try { localStorage.setItem('conversationReadState', JSON.stringify(conversationReadState)); } catch(_) {}
+        }
+        function markConversationRead(phone) {
+            if (!phone) return;
+            conversationReadState[phone] = Date.now();
+            saveConversationReadState();
+            // Remove unread dot in UI immediately if present
+            const item = document.querySelector(`.conversation-item[data-phone="${CSS.escape(phone)}"] .unread-dot`);
+            if (item) item.remove();
         }
 
         // Update CSV replies summary
@@ -4906,37 +4931,49 @@
             console.log('📤 Sent messages:', sentMessages.length);
             
             // Group messages by phone number
+            // Also track lastIncomingTime per conversation for unread logic
             const conversations = {};
             
             // Add incoming messages
             incomingMessages.forEach(msg => {
-                if (!conversations[msg.from]) {
-                    conversations[msg.from] = {
-                        phone: msg.from,
-                        name: findContactByPhone(msg.from).name || msg.from,
+                const phone = msg.from;
+                if (!conversations[phone]) {
+                    conversations[phone] = {
+                        phone,
+                        name: findContactByPhone(phone).name || phone,
                         lastMessage: msg.text,
                         lastTime: msg.timestamp,
-                        unread: true
+                        lastIncomingTime: msg.timestamp
                     };
+                } else {
+                    // Update most recent message/time
+                    if (new Date(msg.timestamp) > new Date(conversations[phone].lastTime)) {
+                        conversations[phone].lastMessage = msg.text;
+                        conversations[phone].lastTime = msg.timestamp;
+                    }
+                    // Track latest incoming time
+                    if (!conversations[phone].lastIncomingTime || new Date(msg.timestamp) > new Date(conversations[phone].lastIncomingTime)) {
+                        conversations[phone].lastIncomingTime = msg.timestamp;
+                    }
                 }
             });
             
             // Add sent messages
             sentMessages.forEach(msg => {
-                if (!conversations[msg.to]) {
-                    conversations[msg.to] = {
-                        phone: msg.to,
-                        name: findContactByPhone(msg.to).name || msg.to,
+                const phone = msg.to;
+                if (!conversations[phone]) {
+                    conversations[phone] = {
+                        phone,
+                        name: findContactByPhone(phone).name || phone,
                         lastMessage: msg.text,
                         lastTime: msg.timestamp,
-                        unread: false
+                        lastIncomingTime: conversations[phone]?.lastIncomingTime || null
                     };
                 } else {
                     // Update if this message is more recent
-                    if (new Date(msg.timestamp) > new Date(conversations[msg.to].lastTime)) {
-                        conversations[msg.to].lastMessage = msg.text;
-                        conversations[msg.to].lastTime = msg.timestamp;
-                        conversations[msg.to].unread = false;
+                    if (new Date(msg.timestamp) > new Date(conversations[phone].lastTime)) {
+                        conversations[phone].lastMessage = msg.text;
+                        conversations[phone].lastTime = msg.timestamp;
                     }
                 }
             });
@@ -4960,12 +4997,15 @@
             
             let html = '';
             conversationsArray.forEach(conversation => {
+                // Determine unread: if latest incoming > last read timestamp
+                const lastRead = conversationReadState[conversation.phone] || 0;
+                const hasUnread = conversation.lastIncomingTime && (new Date(conversation.lastIncomingTime).getTime() > Number(lastRead));
                 const time = new Date(conversation.lastTime);
                 const timeAgo = getTimeAgo(time);
                 const initials = conversation.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
                 
                 html += `
-                    <div class="conversation-item" onclick="selectConversation('${conversation.phone}', '${conversation.name}')">
+                    <div class=\"conversation-item\" data-phone=\"${conversation.phone}\" onclick=\"selectConversation('${conversation.phone}', '${conversation.name}')\">
                         <div class="contact-avatar">${initials}</div>
                         <div class="contact-info">
                             <div class="contact-name">${conversation.name}</div>
@@ -4974,7 +5014,7 @@
                         </div>
                         <div style="font-size: 11px; color: #8e8e93; margin-left: auto; text-align: right; min-width: 60px; display: flex; align-items: center; gap: 8px; justify-content: flex-end;">
                             <span>${timeAgo}</span>
-                            ${conversation.unread ? '<span class="unread-dot"></span>' : ''}
+                            ${hasUnread ? '<span class="unread-dot"></span>' : ''}
                         </div>
                     </div>
                 `;
@@ -4987,6 +5027,10 @@
         // Select conversation
         function selectConversation(phone, name) {
             currentConversation = { phone, name };
+            // Mark as read when opening conversation view
+            markConversationRead(phone);
+            // Mark as read immediately
+            markConversationRead(phone);
             
             // Update active state
             document.querySelectorAll('.conversation-item').forEach(item => {
@@ -5010,6 +5054,8 @@
         // Open conversation modal
         function openConversationModal(phone, name) {
             const modal = document.getElementById('conversationModal');
+            // Mark as read when opening modal
+            markConversationRead(phone);
             const modalContactAvatar = document.getElementById('modalContactAvatar');
             const modalContactName = document.getElementById('modalContactName');
             const modalContactPhone = document.getElementById('modalContactPhone');
